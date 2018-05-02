@@ -4,7 +4,6 @@ project(OdysseyServer)
 set(CMAKE_CXX_STANDARD 11)
 
 find_package (Threads)
-#set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS system REQUIRED)
 
 if(Boost_FOUND)
