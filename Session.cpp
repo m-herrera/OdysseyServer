@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include "Session.h"
-#include <boost/property_tree/xml_parser.hpp>
 
 Session::Session(boost::asio::io_service *ioservice) : tcp_socket(*ioservice){}
 
@@ -22,15 +21,17 @@ void Session::read_handler(const boost::system::error_code &ec, std::size_t byte
         boost::property_tree::ptree pt;
         try{
             boost::property_tree::read_xml(is, pt);
-            std::string strResponse = request;
 
-            std::cout<<strResponse<<std::endl;
+            std::cout<<request<<std::endl;
 
-            boost::asio::async_write(tcp_socket, boost::asio::buffer(strResponse),
+            boost::asio::async_write(tcp_socket, boost::asio::buffer(std::string(bytes) + "\r\n\r\n"),
                                      boost::bind(&Session::write_handler, this, boost::asio::placeholders::error,
                                                  boost::asio::placeholders::bytes_transferred));
         }catch(const boost::property_tree::xml_parser::xml_parser_error& ex){
             std::cout <<"NOT XML"<<std::endl;
+            boost::asio::async_write(tcp_socket, boost::asio::buffer(std::string("NOT XML") + "\r\n\r\n"),
+                                     boost::bind(&Session::write_handler, this, boost::asio::placeholders::error,
+                                                 boost::asio::placeholders::bytes_transferred));
             if (boost::asio::placeholders::bytes_transferred){
                 std::cout <<"Nothing more to read"<<std::endl;
             }
