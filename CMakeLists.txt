@@ -8,7 +8,7 @@ find_package(Boost COMPONENTS system REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
-    add_executable(OdysseyServer main.cpp Server.h Server.cpp Session.h Session.cpp)
+    add_executable(OdysseyServer main.cpp Server.h Server.cpp Session.h Session.cpp base64.cpp base64.h)
     target_link_libraries(OdysseyServer ${Boost_LIBRARIES})
 endif()
 

@@ -25,7 +25,9 @@ private:
     /**
      * Buffer de memoria
      */
-    char bytes[4096];
+    char buffer[1500000];
+    std::string request;
+    long int dataindex = 0;
     /**
      * Manejador de memoria de la sesion
      */
