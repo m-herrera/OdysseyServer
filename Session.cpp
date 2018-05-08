@@ -21,10 +21,14 @@ void Session::read_handler(const boost::system::error_code &ec, std::size_t byte
         boost::property_tree::ptree pt;
         try{
             boost::property_tree::read_xml(is, pt);
-            std::cout<<"Request:"<<std::endl;
             std::ofstream myfile;
-            myfile.open ("/home/marco/Desktop/track.mp3", std::ios::out);
             for(boost::property_tree::ptree::value_type const& v : pt.get_child("request")){
+                if(v.first == "name"){
+                    std::string path = "/Users/Jai/Desktop/SongLibrary/";
+                    path.append(v.second.data());
+                    std::cout<<path<<std::endl;
+                    myfile.open (path, std::ios::out);
+                }
                 if( v.first == "content") {
                     std::string rawData = base64_decode(v.second.data());
                     std::cout<<rawData.size() << "\t" <<v.second.data().size()<<std::endl;
