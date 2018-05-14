@@ -1,7 +1,3 @@
-//
-// Created by Jasson Rodríguez Méndez.
-//
-
 #include "Server.h"
 
 using namespace boost::asio::ip;

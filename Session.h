@@ -1,7 +1,3 @@
-//
-// Created by Jasson Rodríguez Méndez.
-//
-
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/write.hpp>
@@ -10,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
+#include "RequestHandler.h"
 
 #ifndef CFACTORIAL_SERVER_SESSION_H
 #define CFACTORIAL_SERVER_SESSION_H
@@ -25,12 +22,8 @@ private:
     /**
      * Buffer de memoria
      */
-    char buffer[1500000];
+    char buffer[1048576];
     std::string request;
-    long int dataindex = 0;
-    /**
-     * Manejador de memoria de la sesion
-     */
 
 public:
     /**
