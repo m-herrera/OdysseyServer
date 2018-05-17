@@ -12,8 +12,10 @@ void Server::start_accept() {
 }
 
 void Server::accept_handler(const boost::system::error_code &ec, Session *session) {
-    if(!ec){
+    if(!ec) {
         session->start();
+    }else{
+        delete session;
     }
     start_accept();
 }
