@@ -9,9 +9,9 @@
 #include "User.h"
 
 struct TreeNode{
-    TreeNode* left;
-    TreeNode* right;
-    User* data;
+    TreeNode* left = nullptr;
+    TreeNode* right = nullptr;
+    User* data = nullptr;
 };
 
 
