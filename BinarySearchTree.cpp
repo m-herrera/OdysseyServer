@@ -6,41 +6,23 @@
 
 
 bool BinarySearchTree::insert(User* user){
-    TreeNode* node = insertAux(user,root);
-    if(node != nullptr){
-        root = node;
-        return true;
-    }else{
-        delete(node);
-        return false;
-    }
+    return insertAux(user,&root);
 
 }
 
-TreeNode* BinarySearchTree::insertAux(User* user, TreeNode* parent){
-    if (parent == nullptr){
-        parent = new TreeNode();
-        parent->data = user;
+bool BinarySearchTree::insertAux(User* user, TreeNode** parent){
+    if (*parent == nullptr){
+        *parent = new TreeNode();
+        (*parent)->data = user;
+        return true;
     }
-    else if (user->getUsername() > parent->data->getUsername()){
-        TreeNode* node = insertAux(user,parent->right);
-        if(node != nullptr){
-            parent->right = node;
-        }else{
-            delete(node);
-            return nullptr;
-        }
+    else if (user->getUsername() > (*parent)->data->getUsername()){
+        return insertAux(user,&(*parent)->right);
 
-    }else if (user->getUsername() < parent->data->getUsername()){
-        TreeNode* node = insertAux(user,parent->left);
-        if(node != nullptr){
-            parent->left = node;
-        }else{
-            delete(node);
-            return nullptr;
-        }
+    }else if (user->getUsername() < (*parent)->data->getUsername()){
+        return insertAux(user,&(*parent)->left);
     }else{
-        return nullptr;
+        return false;
     }
 }
 

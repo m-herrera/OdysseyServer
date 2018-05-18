@@ -36,7 +36,7 @@ std::string RequestHandler::handleLogIn(boost::property_tree::ptree xmlRequest){
     std::string response = " ";
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")) {
         if (v.first == "username") {
-            user = ServerHandler::users.get(v.second.data());
+            user = ServerHandler::users->get(v.second.data());
             if (user == nullptr) {
                 response = "Invalid Username or Password";
                 break;
@@ -91,7 +91,7 @@ std::string RequestHandler::handleRegistration(boost::property_tree::ptree xmlRe
             newUser->setFriends(friends);
         }
     }
-    if(!ServerHandler::users.insert(newUser)){
+    if(!ServerHandler::users->insert(newUser)){
         response = "username already exists";
     }
     ServerHandler::updateUsers();

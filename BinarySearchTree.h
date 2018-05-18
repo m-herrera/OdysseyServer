@@ -11,7 +11,7 @@
 
 class BinarySearchTree {
 private:
-    TreeNode* insertAux(User* user, TreeNode* parent);
+    bool insertAux(User* user, TreeNode** parent);
     User* getAux(std::string username, TreeNode* parent);
 public:
     TreeNode* root = nullptr;

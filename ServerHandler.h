@@ -12,7 +12,7 @@
 
 class ServerHandler {
 public:
-    static BinarySearchTree users;
+    static BinarySearchTree* users;
     static const std::string trackPath;
     static const std::string usersPath;
     static void updateUsers();
