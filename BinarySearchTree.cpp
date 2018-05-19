@@ -6,6 +6,11 @@
 
 
 bool BinarySearchTree::insert(User* user){
+    if (root == nullptr){
+        root = new TreeNode();
+        root->data = user;
+        return true;
+    }
     return insertAux(user,&root);
 
 }
