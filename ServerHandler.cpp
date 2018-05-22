@@ -4,20 +4,27 @@
 
 #include <fstream>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include "ServerHandler.h"
 
 const std::string ServerHandler::trackPath  ="/home/marco/Desktop/Odyssey++/Tracks/";
 
-const std::string ServerHandler::usersPath  ="/home/marco/Desktop/Odyssey++/users.json";
+const std::string ServerHandler::metadataPath  ="/home/marco/Desktop/Odyssey++/metadata.json";
+
+const std::string ServerHandler::metadataTemplate  ="{\"users\" : [], \n  \"songs\" : []}";
+
+Metadata ServerHandler::songs[] = {};
 
 BinarySearchTree* ServerHandler::users = nullptr;
 
 void ServerHandler::updateUsers(){
     boost::property_tree::ptree data;
+    boost::property_tree::read_json(metadataPath,data);
     boost::property_tree::ptree* users2 = new boost::property_tree::ptree();
     updateUsersAux(users2,users->root);
+    data.erase("users");
     data.add_child("users",*users2);
-    boost::property_tree::write_json(usersPath,data);
+    boost::property_tree::write_json(metadataPath,data);
     delete(users2);
 }
 
@@ -34,11 +41,17 @@ void ServerHandler::loadUsers() {
     if (users == nullptr){
         users = new BinarySearchTree();
     }
+    std::ifstream f(metadataPath);
+    if(!f.good()){
+        std::ofstream metadata;
+        metadata.open(ServerHandler::metadataPath, std::ios::out);
+        metadata.write(metadataTemplate.data(),metadataTemplate.size());
+    }
     boost::property_tree::ptree data;
-    boost::property_tree::read_json(usersPath,data);
+    boost::property_tree::read_json(metadataPath,data);
     for(boost::property_tree::ptree::value_type const& v : data.get_child("users")){
-        User* usuario = new User();
-        usuario->fromJSON(v.second);
-        users->insert(usuario);
+        User* newUser = new User();
+        newUser->fromJSON(v.second);
+        users->insert(newUser);
     }
 }

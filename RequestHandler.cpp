@@ -2,6 +2,7 @@
 // Created by marco on 12/05/18.
 //
 
+#include <boost/property_tree/xml_parser.hpp>
 #include "RequestHandler.h"
 #include "User.h"
 #include "ServerHandler.h"
@@ -10,11 +11,12 @@
 
 std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
     std::string response = "";
+    std::string opCode = "-1";
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if (v.first != "<xmlattr>"){
             continue;
         }
-        std::string opCode =  v.second.get<std::string>("opcode");
+        opCode =  v.second.get<std::string>("opcode");
         if(opCode == "1"){
             response = handleLogIn(xmlRequest);
         }
@@ -26,29 +28,31 @@ std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
         }
 
     }
-    return response;
+    boost::property_tree::ptree responseXML;
+    responseXML.put("response",response);
+    responseXML.put("response.<xmlattr>.opcode",opCode);
+    std::ostringstream stream;
+    boost::property_tree::write_xml(stream,responseXML);
+    return stream.str();
 
 }
 
 std::string RequestHandler::handleLogIn(boost::property_tree::ptree xmlRequest){
     std::cout<< "Log In Request" <<std::endl;
     User* user = nullptr;
-    std::string response = " ";
+    std::string response = "invalid username or password";
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")) {
         if (v.first == "username") {
             user = ServerHandler::users->get(v.second.data());
             if (user == nullptr) {
-                response = "Invalid Username or Password";
                 break;
             }
         }else if(v.first == "password"){
             if(user == nullptr){
                 response = "error";
             }
-            else if (user->getPassword() == encryptPassword(v.second.data())){
-                response = "Access granted";
-            }else{
-                response = "Invalid Username or Password";
+            else if (user->getPassword() == encryptPassword(v.second.data())) {
+                response = "access granted";
             }
             break;
         }
@@ -58,8 +62,7 @@ std::string RequestHandler::handleLogIn(boost::property_tree::ptree xmlRequest){
 }
 
 std::string RequestHandler::handleRegistration(boost::property_tree::ptree xmlRequest){
-    std::cout<< "Registration Request" <<std::endl;
-    std::string response = " ";
+    std::string response = "successful registration";
     User* newUser = new User(); 
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if (v.first == "first_name"){
@@ -101,19 +104,17 @@ std::string RequestHandler::handleRegistration(boost::property_tree::ptree xmlRe
 std::string RequestHandler::handleUpload(boost::property_tree::ptree xmlRequest){
     std::cout<< "Upload Request" <<std::endl;
     std::ofstream trackFile;
-    trackFile.open(ServerHandler::trackPath + "default",std::ios::out);
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
-        if( v.first == "content") {
+        if(v.first == "name"){
+            trackFile.open(ServerHandler::trackPath + v.second.data().data(), std::ios::out);
+        }
+        else if( v.first == "content") {
             std::string rawData = base64_decode(v.second.data());
             trackFile.write(rawData.data(), rawData.size());
-        }else if(v.first == "name"){
-
-            std::rename((ServerHandler::trackPath + "default").data(), (ServerHandler::trackPath + v.second.data()).data());
-
         }
     }
     trackFile.close();
-    return " ";
+    return "successful upload";
 }
 
 std::string RequestHandler::encryptPassword(std::string password){

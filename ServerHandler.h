@@ -9,12 +9,15 @@
 #include <vector>
 #include "User.h"
 #include "BinarySearchTree.h"
+#include "Metadata.h"
 
 class ServerHandler {
 public:
     static BinarySearchTree* users;
     static const std::string trackPath;
-    static const std::string usersPath;
+    static const std::string metadataPath;
+    static const std::string metadataTemplate;
+    static Metadata songs[];
     static void updateUsers();
     static void loadUsers();
 
