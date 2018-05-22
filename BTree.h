@@ -7,6 +7,7 @@
 
 #include "BTreeNode.h"
 #include "Metadata.h"
+#include <iostream>
 
 class BTree{
 public:

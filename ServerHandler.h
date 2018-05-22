@@ -10,6 +10,9 @@
 #include "User.h"
 #include "BinarySearchTree.h"
 #include "Metadata.h"
+#include <fstream>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 class ServerHandler {
 public:

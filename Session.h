@@ -5,7 +5,7 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-
+#include <iostream>
 #include "RequestHandler.h"
 
 #ifndef CFACTORIAL_SERVER_SESSION_H

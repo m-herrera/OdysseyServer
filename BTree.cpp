@@ -1,7 +1,6 @@
 //
 // Created by marco on 21/05/18.
 //
-#include <iostream>
 #include "BTree.h"
 
 using namespace std;

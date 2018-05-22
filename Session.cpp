@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Session.h"
 
 Session::Session(boost::asio::io_service *ioservice) : tcp_socket(*ioservice){}

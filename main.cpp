@@ -1,6 +1,5 @@
 #include <boost/asio.hpp>
 #include "Server.h"
-#include "User.h"
 #include "ServerHandler.h"
 
 int main() {

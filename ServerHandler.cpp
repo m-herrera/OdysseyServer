@@ -2,9 +2,7 @@
 // Created by marco on 13/05/18.
 //
 
-#include <fstream>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/xml_parser.hpp>
+
 #include "ServerHandler.h"
 
 const std::string ServerHandler::trackPath  ="/home/marco/Desktop/Odyssey++/Tracks/";
