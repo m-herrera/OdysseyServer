@@ -14,19 +14,19 @@ std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
         }
         opCode =  v.second.get<std::string>("opcode");
         if(opCode == "1"){
-//            response = handleLogIn(xmlRequest);
+            response = handleLogIn(xmlRequest);
         }
         else if(opCode == "2"){
-//            response = handleRegistration(xmlRequest);
+            response = handleRegistration(xmlRequest);
         }
         else if(opCode == "3"){
-//            response = handleUpload(xmlRequest);
+            response = handleUpload(xmlRequest);
         }
         else if(opCode == "4"){
             response = handleSongLibrary(xmlRequest);
         }
         else if(opCode == "5"){
-//            response = handlePlay(xmlRequest);
+            response = handlePlay(xmlRequest);
         }
 
     }
@@ -39,22 +39,32 @@ std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
 
 }
 
-std::string RequestHandler::handleLogIn(boost::property_tree::ptree xmlRequest){
+boost::property_tree::ptree RequestHandler::handleLogIn(boost::property_tree::ptree xmlRequest){
     std::cout<< "Log In Request" <<std::endl;
     User* user = nullptr;
-    std::string response = "invalid username or password";
+    boost::property_tree::ptree response;
+
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")) {
         if (v.first == "username") {
             user = ServerHandler::users->get(v.second.data());
             if (user == nullptr) {
+                response.put("error",false);
+                response.put("description","invalid username or password");
+                response.put("status",false);
                 break;
             }
         }else if(v.first == "password"){
             if(user == nullptr){
-                response = "error";
+                response.put("error",true);
             }
             else if (user->getPassword() == encryptPassword(v.second.data())) {
-                response = "access granted";
+                response.put("error",false);
+                response.put("description","access granted");
+                response.put("status",true);
+            }else{
+                response.put("error",false);
+                response.put("description","invalid username or password");
+                response.put("status",false);
             }
             break;
         }
@@ -63,8 +73,7 @@ std::string RequestHandler::handleLogIn(boost::property_tree::ptree xmlRequest){
 
 }
 
-std::string RequestHandler::handleRegistration(boost::property_tree::ptree xmlRequest){
-    std::string response = "successful registration";
+boost::property_tree::ptree RequestHandler::handleRegistration(boost::property_tree::ptree xmlRequest){
     User* newUser = new User(); 
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if (v.first == "first_name"){
@@ -96,14 +105,22 @@ std::string RequestHandler::handleRegistration(boost::property_tree::ptree xmlRe
             newUser->setFriends(friends);
         }
     }
+
+    boost::property_tree::ptree response;
+    response.put("error",false);
+
     if(!ServerHandler::users->insert(newUser)){
-        response = "username already exists";
+        response.put("description","username already exists");
+        response.put("status",false);
+    }else{
+        response.put("description","successful registration");
+        response.put("status",true);
     }
     ServerHandler::updateUsers();
     return response;
 }
 
-std::string RequestHandler::handleUpload(boost::property_tree::ptree xmlRequest){
+boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::ptree xmlRequest){
     std::cout<< "Upload Request" <<std::endl;
     std::ofstream trackFile;
     ServerHandler::NumberOfSongs ++;
@@ -129,7 +146,13 @@ std::string RequestHandler::handleUpload(boost::property_tree::ptree xmlRequest)
     ServerHandler::songsArtists->insert(song);
     ServerHandler::updateSongs();
     trackFile.close();
-    return "successful upload";
+
+    boost::property_tree::ptree response;
+    response.put("error",false);
+    response.put("description","successful upload");
+    response.put("status",true);
+
+    return response;
 }
 
 std::string RequestHandler::encryptPassword(std::string password){
@@ -223,23 +246,26 @@ boost::property_tree::ptree RequestHandler::getSongs(int page){
 }
 
 
-std::string RequestHandler::handlePlay(boost::property_tree::ptree xmlRequest){
+boost::property_tree::ptree RequestHandler::handlePlay(boost::property_tree::ptree xmlRequest){
     boost::property_tree::ptree responseXML;
     Metadata* song = nullptr;
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "name"){
             song = ServerHandler::songsNames->search(v.second.data());
             if (song == nullptr){
-                return "song not found";
+                responseXML.put("error",true);
+                responseXML.put("description","song doesn't exist");
+
             }
         }
         else if(v.first == "chunk"){
             responseXML = getChunk(song->pathName,std::atoi(v.second.data().data()));
+            responseXML.put("error",false);
+            responseXML.put("description","success");
         }
     }
-    std::ostringstream stream;
-    boost::property_tree::write_xml(stream,responseXML);
-    return stream.str();
+
+    return responseXML;
 }
 
 boost::property_tree::ptree RequestHandler::getChunk(std::string path,int chunk){
