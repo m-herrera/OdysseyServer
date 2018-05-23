@@ -8,7 +8,7 @@ int main() {
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), 2000);
 
     Server server(endpoint, &ioservice);
-    ServerHandler::loadUsers();
+    ServerHandler::loadSetUp();
     srand(time(nullptr));
     ioservice.run();
     return 0;

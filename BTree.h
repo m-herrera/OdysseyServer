@@ -11,22 +11,23 @@
 
 class BTree{
 public:
-    BtreeNode *root = nullptr;
+    BTreeNode *root = nullptr;
     void insert(Metadata* val);
-    void _delete(Metadata* val,BtreeNode *myNode);
-    void traversal(BtreeNode *myNode);
+    void _delete(Metadata* val,BTreeNode *myNode);
+    Metadata* search(std::string);
 private:
-    BtreeNode* createNode(Metadata* val, BtreeNode *child);
-    void addValToNode(Metadata*val, int pos, BtreeNode *node, BtreeNode *child);
-    void splitNode(Metadata* val, Metadata** pval, int pos, BtreeNode *node,BtreeNode *child, BtreeNode **newNode);
-    int setValueInNode(Metadata* val, Metadata** pval,BtreeNode *node, BtreeNode **child);
-    void copySuccessor(BtreeNode *myNode, int pos);
-    void removeVal(BtreeNode *myNode, int pos);
-    void doRightShift(BtreeNode *myNode, int pos);
-    void doLeftShift(BtreeNode *myNode, int pos);
-    void mergeNodes(BtreeNode *myNode, int pos);
-    void adjustNode(BtreeNode *myNode, int pos);
-    int delValFromNode(Metadata* val,BtreeNode *myNode);
+    BTreeNode* createNode(Metadata* val, BTreeNode *child);
+    void addValToNode(Metadata*val, int pos, BTreeNode *node, BTreeNode *child);
+    void splitNode(Metadata* val, Metadata** pval, int pos, BTreeNode *node,BTreeNode *child, BTreeNode **newNode);
+    int setValueInNode(Metadata* val, Metadata** pval,BTreeNode *node, BTreeNode **child);
+    void copySuccessor(BTreeNode *myNode, int pos);
+    void removeVal(BTreeNode *myNode, int pos);
+    void doRightShift(BTreeNode *myNode, int pos);
+    void doLeftShift(BTreeNode *myNode, int pos);
+    void mergeNodes(BTreeNode *myNode, int pos);
+    void adjustNode(BTreeNode *myNode, int pos);
+    int delValFromNode(Metadata* val,BTreeNode *myNode);
+    Metadata* searchAux(std::string,BTreeNode *myNode);
 };
 
 

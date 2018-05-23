@@ -18,11 +18,15 @@ class RequestHandler {
 public:
     static std::string handle(boost::property_tree::ptree xmlRequest);
     static std::string encryptPassword(std::string password);
-private:
+//private:
     static std::string handleLogIn(boost::property_tree::ptree xmlRequest);
     static std::string handleRegistration(boost::property_tree::ptree xmlRequest);
     static std::string handleUpload(boost::property_tree::ptree xmlRequest);
+    static std::string handleSongLibrary(boost::property_tree::ptree xmlRequest);
+    static std::string handlePlay(boost::property_tree::ptree xmlRequest);
     static void generateSalt(char* buffer, int size);
+    static boost::property_tree::ptree getSongs(int page);
+    static boost::property_tree::ptree getChunk(std::string parh,int page);
 };
 
 

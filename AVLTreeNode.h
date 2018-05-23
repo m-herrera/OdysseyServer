@@ -9,7 +9,7 @@
 
 struct AVLTreeNode
 {
-    Metadata* data;
+    Metadata* data = nullptr;
     AVLTreeNode* left = nullptr;
     AVLTreeNode* right = nullptr;
     int height;

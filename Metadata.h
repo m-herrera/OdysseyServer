@@ -6,13 +6,55 @@
 #define ODYSSEYSERVER_METADATA_H
 
 #include <iostream>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
-struct Metadata{
+class Metadata{
 public:
-    std::string name;
-    std::string artist;
-    std::string album;
+    std::string name = "";
+    std::string artist = "";
+    std::string album  = "";
+    std::string pathName = "";
+    void fromJSON(boost::property_tree::ptree json) {
+
+        for(boost::property_tree::ptree::value_type const& v : json){
+            if (v.first == "name"){
+                this->name = v.second.data();
+            }
+            else if(v.first == "artist"){
+                this->artist = v.second.data();
+            }
+            else if(v.first == "album"){
+                this->album = v.second.data();
+            }
+            else if(v.first == "pathName"){
+                this->pathName = v.second.data();
+            }
+
+        }
+    }
+
+    boost::property_tree::ptree toJSON() {
+
+        boost::property_tree::ptree json;
+        json.put("name", this->name);
+        json.put("album", this->album);
+        json.put("artist", this->artist);
+        json.put("pathName", this->pathName);
+        return json;
+    }
+
+    boost::property_tree::ptree toXML() {
+
+        boost::property_tree::ptree xml;
+        xml.put("name", this->name);
+        xml.put("album", this->album);
+        xml.put("artist", this->artist);
+        return xml;
+    }
 
 };
+
+
 
 #endif //ODYSSEYSERVER_METADATA_H

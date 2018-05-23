@@ -22,6 +22,12 @@ std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
         else if(opCode == "3"){
             response = handleUpload(xmlRequest);
         }
+        else if(opCode == "4"){
+            response = handleSongLibrary(xmlRequest);
+        }
+        else if(opCode == "5"){
+            response = handlePlay(xmlRequest);
+        }
 
     }
     boost::property_tree::ptree responseXML;
@@ -100,15 +106,28 @@ std::string RequestHandler::handleRegistration(boost::property_tree::ptree xmlRe
 std::string RequestHandler::handleUpload(boost::property_tree::ptree xmlRequest){
     std::cout<< "Upload Request" <<std::endl;
     std::ofstream trackFile;
+    ServerHandler::NumberOfSongs ++;
+    trackFile.open(ServerHandler::trackPath +"Track"+ std::to_string(ServerHandler::NumberOfSongs), std::ios::out);
+    Metadata* song = new Metadata();
+    song->pathName = "Track"+std::to_string(ServerHandler::NumberOfSongs);
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "name"){
-            trackFile.open(ServerHandler::trackPath + v.second.data().data(), std::ios::out);
+            song->name = v.second.data();
+        }
+        else if(v.first == "artist"){
+            song->artist = v.second.data();
+        }
+        else if(v.first == "album"){
+            song->album = v.second.data();
         }
         else if( v.first == "content") {
             std::string rawData = base64_decode(v.second.data());
             trackFile.write(rawData.data(), rawData.size());
         }
     }
+    ServerHandler::songsNames->insert(song);
+    ServerHandler::songsArtists->insert(song);
+    ServerHandler::updateSongs();
     trackFile.close();
     return "successful upload";
 }
@@ -151,3 +170,128 @@ void RequestHandler::generateSalt(char *buffer, const int size) {
 
     buffer[size] = 0;
 }
+
+std::string RequestHandler::handleSongLibrary(boost::property_tree::ptree xmlRequest){
+    boost::property_tree::ptree responseXML;
+    for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
+        if(v.first == "sortBy"){
+            ServerHandler::sortBy = v.second.data();
+        }
+        else if(v.first == "sortWith"){
+            if(v.second.data() == "quickSort"){
+                ServerHandler::quickSort();
+            }
+            else if(v.second.data() == "bubbleSort"){
+                ServerHandler::bubbleSort();
+            }
+            else if(v.second.data() == "radixSort"){
+                ServerHandler::radixSort();
+            }
+        }
+        else if(v.first == "page"){
+            responseXML = getSongs(std::atoi(v.second.data().data()));
+        }
+    }
+    std::ostringstream stream;
+    boost::property_tree::write_xml(stream,responseXML);
+    return stream.str();
+}
+
+boost::property_tree::ptree RequestHandler::getSongs(int page){
+    int index = 0;
+    int songs = 0;
+
+    if(page != 0){
+        index = page*ServerHandler::pageSize;
+    }
+    boost::property_tree::ptree tree;
+    boost::property_tree::ptree parent;
+    for(int i = 0; i < ServerHandler::pageSize;i++){
+        if (index >= ServerHandler::songs.size()){
+            break;
+        }
+        tree.push_back(std::make_pair("song",ServerHandler::songs.at(index)->toXML()));
+        index++;
+        songs++;
+    }
+
+    int pages = (int)std::ceil((double)ServerHandler::songs.size()/(double)ServerHandler::pageSize);
+    parent.put("numberOfSongs",songs);
+    parent.put("pages",pages);
+    parent.put("pageSize",ServerHandler::pageSize);
+    parent.add_child("songs",tree);
+    return parent;
+
+}
+
+
+std::string RequestHandler::handlePlay(boost::property_tree::ptree xmlRequest){
+    boost::property_tree::ptree responseXML;
+    Metadata* song = nullptr;
+    for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
+        if(v.first == "name"){
+            song = ServerHandler::songsNames->search(v.second.data());
+            if (song == nullptr){
+                return "song not found";
+            }
+        }
+        else if(v.first == "chunk"){
+            responseXML = getChunk(song->pathName,std::atoi(v.second.data().data()));
+        }
+    }
+    std::ostringstream stream;
+    boost::property_tree::write_xml(stream,responseXML);
+    return stream.str();
+}
+
+boost::property_tree::ptree RequestHandler::getChunk(std::string path,int chunk){
+
+    std::fstream trackFile;
+    trackFile.open(ServerHandler::trackPath +path, std::ios::in|std::ios::binary);
+
+    if(!trackFile){}
+
+    int seek = 0;
+    int bytes = 0;
+    if(chunk != 0){
+        seek = chunk*ServerHandler::chunkSize;
+    }
+
+    trackFile.seekg(0, std::ios::end);
+    int size = trackFile.tellg();
+    trackFile.seekg(0, std::ios::beg);
+
+    if(seek != 0) {trackFile.seekg(seek);}
+
+    char* data = new char[ServerHandler::chunkSize];
+
+    if(seek + ServerHandler::chunkSize > size){
+        bytes = size-seek;
+        trackFile.read(data,bytes);
+
+    }else{
+        bytes = ServerHandler::chunkSize;
+        trackFile.read(data,bytes);
+    }
+    trackFile.close();
+
+    boost::property_tree::ptree parent;
+    int chunks = (int)std::ceil((double)size/(double)ServerHandler::chunkSize);
+    parent.put("NumberOfBytes",bytes);
+    parent.put("chunks",chunks);
+    parent.put("chunkSize",ServerHandler::chunkSize);
+
+    std::string strData(data, bytes);
+
+        unsigned char newData[strData.size()];
+    std::copy( strData.begin(), strData.end(), newData);
+    newData[strData.length()] = 0;
+
+    strData = base64_encode(newData,strData.size());
+    parent.put("content",strData);
+
+    delete[] data;
+    return parent;
+
+}
+

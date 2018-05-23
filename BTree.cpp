@@ -7,8 +7,8 @@ using namespace std;
 
 
 /* creating new node */
-BtreeNode* BTree::createNode(Metadata* val, BtreeNode *child) {
-    BtreeNode *newNode = new BtreeNode;
+BTreeNode* BTree::createNode(Metadata* val, BTreeNode *child) {
+    BTreeNode *newNode = new BTreeNode;
     newNode->val[1] = val;
     newNode->count = 1;
     newNode->link[0] = root;
@@ -17,7 +17,7 @@ BtreeNode* BTree::createNode(Metadata* val, BtreeNode *child) {
 }
 
 /* Places the value in appropriate position */
-void BTree::addValToNode(Metadata* val, int pos, BtreeNode *node, BtreeNode *child) {
+void BTree::addValToNode(Metadata* val, int pos, BTreeNode *node, BTreeNode *child) {
     int j = node->count;
     while (j > pos) {
         node->val[j + 1] = node->val[j];
@@ -30,7 +30,7 @@ void BTree::addValToNode(Metadata* val, int pos, BtreeNode *node, BtreeNode *chi
 }
 
 /* split the node */
-void BTree::splitNode(Metadata* val, Metadata** pval, int pos, BtreeNode *node,BtreeNode *child, BtreeNode **newNode) {
+void BTree::splitNode(Metadata* val, Metadata** pval, int pos, BTreeNode *node,BTreeNode *child, BTreeNode **newNode) {
     int median, j;
 
     if (pos > MIN)
@@ -38,7 +38,7 @@ void BTree::splitNode(Metadata* val, Metadata** pval, int pos, BtreeNode *node,B
     else
         median = MIN;
 
-    *newNode = new BtreeNode;
+    *newNode = new BTreeNode;
     j = median + 1;
     while (j <= MAX) {
         (*newNode)->val[j - median] = node->val[j];
@@ -60,7 +60,7 @@ void BTree::splitNode(Metadata* val, Metadata** pval, int pos, BtreeNode *node,B
 }
 
 /* sets the value val in the node */
-int BTree::setValueInNode(Metadata* val, Metadata **pval,BtreeNode *node, BtreeNode **child) {
+int BTree::setValueInNode(Metadata* val, Metadata **pval,BTreeNode *node, BTreeNode **child) {
 
     int pos;
     if (!node) {
@@ -96,7 +96,7 @@ int BTree::setValueInNode(Metadata* val, Metadata **pval,BtreeNode *node, BtreeN
 void BTree::insert(Metadata* val) {
     int flag;
     Metadata* i = new Metadata();
-    BtreeNode *child;
+    BTreeNode *child;
 
     flag = setValueInNode(val, &i, root, &child);
     if (flag)
@@ -104,8 +104,8 @@ void BTree::insert(Metadata* val) {
 }
 
 /* copy successor for the value to be deleted */
-void BTree::copySuccessor(BtreeNode *myNode, int pos) {
-    BtreeNode *dummy;
+void BTree::copySuccessor(BTreeNode *myNode, int pos) {
+    BTreeNode *dummy;
     dummy = myNode->link[pos];
 
     for (; dummy->link[0] != nullptr;)
@@ -115,7 +115,7 @@ void BTree::copySuccessor(BtreeNode *myNode, int pos) {
 }
 
 /* removes the value from the given node and rearrange values */
-void BTree::removeVal(BtreeNode *myNode, int pos) {
+void BTree::removeVal(BTreeNode *myNode, int pos) {
     int i = pos + 1;
     while (i <= myNode->count) {
         myNode->val[i - 1] = myNode->val[i];
@@ -126,8 +126,8 @@ void BTree::removeVal(BtreeNode *myNode, int pos) {
 }
 
 /* shifts value from parent to right child */
-void BTree::doRightShift(BtreeNode *myNode, int pos) {
-    BtreeNode *x = myNode->link[pos];
+void BTree::doRightShift(BTreeNode *myNode, int pos) {
+    BTreeNode *x = myNode->link[pos];
     int j = x->count;
 
     while (j > 0) {
@@ -146,9 +146,9 @@ void BTree::doRightShift(BtreeNode *myNode, int pos) {
 }
 
 /* shifts value from parent to left child */
-void BTree::doLeftShift(BtreeNode *myNode, int pos) {
+void BTree::doLeftShift(BTreeNode *myNode, int pos) {
     int j = 1;
-    BtreeNode *x = myNode->link[pos - 1];
+    BTreeNode *x = myNode->link[pos - 1];
 
     x->count++;
     x->val[x->count] = myNode->val[pos];
@@ -168,9 +168,9 @@ void BTree::doLeftShift(BtreeNode *myNode, int pos) {
 }
 
 /* merge nodes */
-void BTree::mergeNodes(BtreeNode *myNode, int pos) {
+void BTree::mergeNodes(BTreeNode *myNode, int pos) {
     int j = 1;
-    BtreeNode *x1 = myNode->link[pos], *x2 = myNode->link[pos - 1];
+    BTreeNode *x1 = myNode->link[pos], *x2 = myNode->link[pos - 1];
 
     x2->count++;
     x2->val[x2->count] = myNode->val[pos];
@@ -194,7 +194,7 @@ void BTree::mergeNodes(BtreeNode *myNode, int pos) {
 }
 
 /* adjusts the given node */
-void BTree::adjustNode(BtreeNode *myNode, int pos) {
+void BTree::adjustNode(BTreeNode *myNode, int pos) {
     if (!pos) {
         if (myNode->link[1]->count > MIN) {
             doLeftShift(myNode, 1);
@@ -227,7 +227,7 @@ void BTree::adjustNode(BtreeNode *myNode, int pos) {
 }
 
 /* delete val from the node */
-int BTree::delValFromNode(Metadata* val,BtreeNode *myNode) {
+int BTree::delValFromNode(Metadata* val,BTreeNode *myNode) {
     int pos, flag = 0;
     if (myNode) {
         if (val->name < myNode->val[1]->name) {
@@ -269,8 +269,8 @@ int BTree::delValFromNode(Metadata* val,BtreeNode *myNode) {
 
 /* delete val from B-tree */
 
-void BTree::_delete(Metadata* val,BtreeNode *myNode) {
-    BtreeNode *tmp;
+void BTree::_delete(Metadata* val,BTreeNode *myNode) {
+    BTreeNode *tmp;
     if (!delValFromNode(val, myNode)) {
         cout<<"Given value is not present in B-Tree\n";
         return;
@@ -286,16 +286,22 @@ void BTree::_delete(Metadata* val,BtreeNode *myNode) {
     return;
 }
 
+Metadata* BTree::search(std::string name) {
+    return searchAux(name,root);
+}
 
 /* B-Tree Traversal */
-void BTree::traversal(BtreeNode *myNode) {
+Metadata* BTree::searchAux(std::string name,BTreeNode *myNode) {
     int i;
     if (myNode) {
         for (i = 0; i < myNode->count; i++) {
-            traversal(myNode->link[i]);
-            cout<< myNode->val[i + 1]->album<<' ';
+            searchAux(name,myNode->link[i]);
+            if (myNode->val[i + 1]->name == name){
+                return (myNode->val[i + 1]);
+            };
         }
-        traversal(myNode->link[i]);
+        searchAux(name,myNode->link[i]);
     }
+    return nullptr;
 }
 
