@@ -6,7 +6,7 @@
 
 
 std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
-    std::string response = "";
+    boost::property_tree::ptree response;
     std::string opCode = "-1";
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if (v.first != "<xmlattr>"){
@@ -14,24 +14,24 @@ std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
         }
         opCode =  v.second.get<std::string>("opcode");
         if(opCode == "1"){
-            response = handleLogIn(xmlRequest);
+//            response = handleLogIn(xmlRequest);
         }
         else if(opCode == "2"){
-            response = handleRegistration(xmlRequest);
+//            response = handleRegistration(xmlRequest);
         }
         else if(opCode == "3"){
-            response = handleUpload(xmlRequest);
+//            response = handleUpload(xmlRequest);
         }
         else if(opCode == "4"){
             response = handleSongLibrary(xmlRequest);
         }
         else if(opCode == "5"){
-            response = handlePlay(xmlRequest);
+//            response = handlePlay(xmlRequest);
         }
 
     }
     boost::property_tree::ptree responseXML;
-    responseXML.put("response",response);
+    responseXML.put_child("response",response);
     responseXML.put("response.<xmlattr>.opcode",opCode);
     std::ostringstream stream;
     boost::property_tree::write_xml(stream,responseXML);
@@ -171,7 +171,7 @@ void RequestHandler::generateSalt(char *buffer, const int size) {
     buffer[size] = 0;
 }
 
-std::string RequestHandler::handleSongLibrary(boost::property_tree::ptree xmlRequest){
+boost::property_tree::ptree RequestHandler::handleSongLibrary(boost::property_tree::ptree xmlRequest){
     boost::property_tree::ptree responseXML;
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "sortBy"){
@@ -192,9 +192,7 @@ std::string RequestHandler::handleSongLibrary(boost::property_tree::ptree xmlReq
             responseXML = getSongs(std::atoi(v.second.data().data()));
         }
     }
-    std::ostringstream stream;
-    boost::property_tree::write_xml(stream,responseXML);
-    return stream.str();
+    return responseXML;
 }
 
 boost::property_tree::ptree RequestHandler::getSongs(int page){
