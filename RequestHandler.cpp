@@ -12,7 +12,7 @@ std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
         if (v.first != "<xmlattr>"){
             continue;
         }
-        opCode =  v.second.get<std::string>("opcode");
+        opCode = v.second.get<std::string>("opcode");
         if(opCode == "1"){
             response = handleLogIn(xmlRequest);
         }
@@ -255,13 +255,15 @@ boost::property_tree::ptree RequestHandler::handlePlay(boost::property_tree::ptr
             if (song == nullptr){
                 responseXML.put("error",true);
                 responseXML.put("description","song doesn't exist");
-
+                break;
             }
+            std::cout<<song->name<<std::endl;
         }
         else if(v.first == "chunk"){
             responseXML = getChunk(song->pathName,std::atoi(v.second.data().data()));
             responseXML.put("error",false);
             responseXML.put("description","success");
+            break;
         }
     }
 

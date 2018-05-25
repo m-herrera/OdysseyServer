@@ -295,12 +295,14 @@ Metadata* BTree::searchAux(std::string name,BTreeNode *myNode) {
     int i;
     if (myNode) {
         for (i = 0; i < myNode->count; i++) {
-            searchAux(name,myNode->link[i]);
+            Metadata* search = searchAux(name,myNode->link[i]);
+            if(search != nullptr){
+                return search;
+            }
             if (myNode->val[i + 1]->name == name){
                 return (myNode->val[i + 1]);
             };
         }
-        searchAux(name,myNode->link[i]);
     }
     return nullptr;
 }
