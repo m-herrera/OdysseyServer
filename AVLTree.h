@@ -10,11 +10,34 @@
 
 class AVLTree {
 public:
+    /**
+     * elemento raíz del arbol
+     */
     AVLTreeNode* root = nullptr;
+
+    /**elimina los nodos por debajo del nodo al que se aplique
+     *
+     * @param t nodo al que se eliminan sus nodos hijos
+     */
     void makeEmpty(AVLTreeNode* t);
+
+    /**Agrega un elemento en el árbol
+     *
+     * @param x elemento por agregar
+     */
     void insert(Metadata* x);
+
+    /**elimina un elemento en el árbol
+     *
+     * @param x elemento por eliminar
+     */
     void remove(Metadata* x);
-    void display();
+
+    /**recorre los elementos en el árbol
+    *
+    *
+    */
+    void traverse();
 
 private:
     AVLTreeNode* insert(Metadata* x, AVLTreeNode* t);

@@ -11,10 +11,30 @@
 
 class BTree{
 public:
+    /**
+     * elemento raíz
+     */
     BTreeNode *root = nullptr;
+
+    /**Agrega un elemento en el árbol
+     *
+     * @param val elemento por agregar
+     */
     void insert(Metadata* val);
+
+    /**Elimina un elemento de la lista a partir de un nodo específico
+     *
+     * @param val elemento por eliminar
+     * @param myNode elemento a partir del cual eliminar
+     */
     void _delete(Metadata* val,BTreeNode *myNode);
-    Metadata* search(std::string);
+
+    /**Busca un elemento en el arbol
+     *
+     * @param elemento elemento buscado
+     * @return nullptr en caso de no encontrarlo
+     */
+    Metadata* search(std::string elemento);
 private:
     BTreeNode* createNode(Metadata* val, BTreeNode *child);
     void addValToNode(Metadata*val, int pos, BTreeNode *node, BTreeNode *child);

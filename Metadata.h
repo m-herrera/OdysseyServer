@@ -15,6 +15,11 @@ public:
     std::string artist = "";
     std::string album  = "";
     std::string pathName = "";
+
+    /**carga un json en el objeto
+     *
+     * @param json
+     */
     void fromJSON(boost::property_tree::ptree json) {
 
         for(boost::property_tree::ptree::value_type const& v : json){
@@ -33,7 +38,10 @@ public:
 
         }
     }
-
+    /**crea un json a partir del objeto
+     *
+     * @return arbol que representa el json
+     */
     boost::property_tree::ptree toJSON() {
 
         boost::property_tree::ptree json;
@@ -44,6 +52,10 @@ public:
         return json;
     }
 
+    /**crea un xml a partir del objeto
+     *
+     * @return arbol que representa el xml
+     */
     boost::property_tree::ptree toXML() {
 
         boost::property_tree::ptree xml;

@@ -16,7 +16,18 @@
 
 class RequestHandler {
 public:
+    /**analiza las peticiones y atiende según su codigo
+     *
+     * @param xmlRequest
+     * @return
+     */
     static std::string handle(boost::property_tree::ptree xmlRequest);
+
+    /**encripta un string mediante una función de hash
+     *
+     * @param password string por encriptar
+     * @return string encriptado
+     */
     static std::string encryptPassword(std::string password);
 private:
     static boost::property_tree::ptree handleLogIn(boost::property_tree::ptree xmlRequest);

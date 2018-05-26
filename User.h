@@ -51,8 +51,16 @@ public:
 
     void setAge(int age);
 
+    /**carga un json en el objeto
+     *
+     * @param json
+     */
     void fromJSON(boost::property_tree::ptree json);
 
+    /**crea un json a partir del objeto
+     *
+     * @return arbol que representa el json
+     */
     boost::property_tree::ptree toJSON();
 
 };

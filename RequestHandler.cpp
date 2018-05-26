@@ -303,9 +303,7 @@ boost::property_tree::ptree RequestHandler::getChunk(std::string path,int chunk)
 
     boost::property_tree::ptree parent;
     int chunks = (int)std::ceil((double)size/(double)ServerHandler::chunkSize);
-    parent.put("NumberOfBytes",bytes);
-    parent.put("chunks",chunks);
-    parent.put("chunkSize",ServerHandler::chunkSize);
+
 
     std::string strData(data, bytes);
 
@@ -315,6 +313,9 @@ boost::property_tree::ptree RequestHandler::getChunk(std::string path,int chunk)
 
     strData = base64_encode(newData,strData.size());
     parent.put("content",strData);
+    parent.put("NumberOfBytes",bytes);
+    parent.put("chunks",chunks);
+    parent.put("chunkSize",ServerHandler::chunkSize);
 
     delete[] data;
     return parent;

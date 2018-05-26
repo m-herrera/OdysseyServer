@@ -199,7 +199,7 @@ void AVLTree::remove(Metadata* x)
     root = remove(x, root);
 }
 
-void AVLTree::display()
+void AVLTree::traverse()
 {
     inorder(root);
     cout << endl;
