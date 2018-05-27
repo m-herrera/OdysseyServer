@@ -144,6 +144,7 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
     }
     ServerHandler::songsNames->insert(song);
     ServerHandler::songsArtists->insert(song);
+    ServerHandler::songs.push_back(song);
     ServerHandler::updateSongs();
     trackFile.close();
 
