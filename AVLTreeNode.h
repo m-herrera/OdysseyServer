@@ -9,7 +9,7 @@
 
 struct AVLTreeNode
 {
-    Metadata* data = nullptr;
+    std::vector<Metadata*> data;
     AVLTreeNode* left = nullptr;
     AVLTreeNode* right = nullptr;
     int height;

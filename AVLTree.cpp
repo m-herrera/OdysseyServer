@@ -21,31 +21,33 @@ AVLTreeNode* AVLTree::insert(Metadata* x, AVLTreeNode* t)
     if(t == nullptr)
     {
         t = new AVLTreeNode;
-        t->data = x;
+        t->data.push_back(x);
         t->height = 0;
         t->left = t->right = nullptr;
     }
-    else if(x->artist < t->data->artist)
+    else if(x->artist < t->data.at(0)->artist)
     {
         t->left = insert(x, t->left);
         if(height(t->left) - height(t->right) == 2)
         {
-            if(x->artist < t->left->data->artist)
+            if(x->artist < t->left->data.at(0)->artist)
                 t = singleRightRotate(t);
             else
                 t = doubleRightRotate(t);
         }
     }
-    else if(x->artist > t->data->artist)
+    else if(x->artist > t->data.at(0)->artist)
     {
         t->right = insert(x, t->right);
         if(height(t->right) - height(t->left) == 2)
         {
-            if(x->artist > t->right->data->artist)
+            if(x->artist > t->right->data.at(0)->artist)
                 t = singleLeftRotate(t);
             else
                 t = doubleLeftRotate(t);
         }
+    }else{
+        t->data.push_back(x);
     }
 
     t->height = max(height(t->left), height(t->right))+1;
@@ -113,9 +115,9 @@ AVLTreeNode* AVLTree::remove(Metadata* x, AVLTreeNode* t)
         return nullptr;
 
         // Searching for element
-    else if(x->artist < t->data->artist)
+    else if(x->artist < t->data.at(0)->artist)
         t->left = remove(x, t->left);
-    else if(x->artist > t->data->artist)
+    else if(x->artist > t->data.at(0)->artist)
         t->right = remove(x, t->right);
 
         // Element found
@@ -124,7 +126,7 @@ AVLTreeNode* AVLTree::remove(Metadata* x, AVLTreeNode* t)
     {
         temp = findMin(t->right);
         t->data = temp->data;
-        t->right = remove(t->data, t->right);
+        t->right = remove(t->data.at(0), t->right);
     }
         // With one or zero child
     else
@@ -178,13 +180,19 @@ int AVLTree::getBalance(AVLTreeNode* t)
         return height(t->left) - height(t->right);
 }
 
-void AVLTree::inorder(AVLTreeNode* t)
+void AVLTree::inorder(AVLTreeNode* t,std::vector<Metadata*> & list,std::string artist)
 {
     if(t == nullptr)
         return;
-    inorder(t->left);
-    cout << t->data->album << " ";
-    inorder(t->right);
+    inorder(t->left,list,artist);
+    for(Metadata* data : t->data) {
+        std::string artist2 = data->artist;
+        std::transform(artist2.begin(), artist2.end(), artist2.begin(), ::tolower);
+        if (artist2 == artist) {
+            list.push_back(data);
+        }
+    }
+    inorder(t->right,list,artist);
 }
 
 
@@ -199,8 +207,10 @@ void AVLTree::remove(Metadata* x)
     root = remove(x, root);
 }
 
-void AVLTree::traverse()
+std::vector<Metadata*> AVLTree::search(std::string artist)
 {
-    inorder(root);
-    cout << endl;
+    std::transform(artist.begin(), artist.end(), artist.begin(), ::tolower);
+    std::vector<Metadata*> response;
+    inorder(root,response,artist);
+    return response;
 }

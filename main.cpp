@@ -1,6 +1,7 @@
 #include <boost/asio.hpp>
 #include "Server.h"
 #include "ServerHandler.h"
+#include "Sorter.h"
 
 int main() {
 

@@ -49,6 +49,8 @@ public:
      */
     static std::vector<Metadata*> songs;
 
+    static std::vector<Metadata*> sortedAlbums;
+
     /**
      * estructura que almacena canciones según su nombre
      */
@@ -91,6 +93,10 @@ public:
      */
     static void loadSetUp();
 
+    static void insertAlbum(Metadata*);
+
+    static std::vector<Metadata*> searchAlbums(std::string);
+
     /**
      * ordena la lista de canciones mediante quicksort
      */
@@ -111,6 +117,7 @@ private:
     static void loadSongs();
     static void updateUsersAux(boost::property_tree::ptree* users, TreeNode* parent);
     static void updateSongsAux(boost::property_tree::ptree* users, BTreeNode* parent);
+
 };
 
 

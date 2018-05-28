@@ -34,7 +34,7 @@ public:
      * @param elemento elemento buscado
      * @return nullptr en caso de no encontrarlo
      */
-    Metadata* search(std::string elemento);
+    std::vector<Metadata*> search(std::string elemento);
 private:
     BTreeNode* createNode(Metadata* val, BTreeNode *child);
     void addValToNode(Metadata*val, int pos, BTreeNode *node, BTreeNode *child);
@@ -47,7 +47,7 @@ private:
     void mergeNodes(BTreeNode *myNode, int pos);
     void adjustNode(BTreeNode *myNode, int pos);
     int delValFromNode(Metadata* val,BTreeNode *myNode);
-    Metadata* searchAux(std::string,BTreeNode *myNode);
+    std::vector<Metadata*> searchAux(std::string,BTreeNode *myNode);
 };
 
 

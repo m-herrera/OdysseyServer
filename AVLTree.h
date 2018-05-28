@@ -37,7 +37,7 @@ public:
     *
     *
     */
-    void traverse();
+    std::vector<Metadata*> search(std::string);
 
 private:
     AVLTreeNode* insert(Metadata* x, AVLTreeNode* t);
@@ -50,7 +50,7 @@ private:
     AVLTreeNode* remove(Metadata* x, AVLTreeNode* t);
     int height(AVLTreeNode* t);
     int getBalance(AVLTreeNode* t);
-    void inorder(AVLTreeNode* t);
+    void inorder(AVLTreeNode* t,std::vector<Metadata*> & list,std::string album);
 };
 
 

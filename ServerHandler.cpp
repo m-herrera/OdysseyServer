@@ -4,6 +4,7 @@
 
 
 #include "ServerHandler.h"
+#include "Sorter.h"
 
 const std::string ServerHandler::trackPath  ="/home/marco/Desktop/Odyssey++/Tracks/";
 
@@ -14,6 +15,8 @@ const std::string ServerHandler::metadataTemplate  ="{\"users\" : [], \n  \"song
 int ServerHandler::NumberOfSongs = 0;
 
 std::vector<Metadata*> ServerHandler::songs;
+
+std::vector<Metadata*> ServerHandler::sortedAlbums;
 
 BTree* ServerHandler::songsNames = nullptr;
 
@@ -78,6 +81,7 @@ void ServerHandler::loadSongs() {
         songsArtists->insert(song);
         songsNames->insert(song);
         songs.push_back(song);
+        insertAlbum(song);
         NumberOfSongs++;
     }
 }
@@ -109,14 +113,42 @@ void ServerHandler::updateSongsAux(boost::property_tree::ptree* songs, BTreeNode
     if (parent) {
         for (i = 0; i < parent->count; i++) {
             updateSongsAux(songs,parent->link[i]);
-            songs->push_back(std::make_pair("",parent->val[i + 1]->toJSON()));
+            for(Metadata* data : parent->val[i + 1])
+                songs->push_back(std::make_pair("",data->toJSON()));
         }
         updateSongsAux(songs,parent->link[i]);
     }
 }
 
-void ServerHandler::quickSort(){}
+void ServerHandler::quickSort(){
+    Sorter::quickSort(songs,0,NumberOfSongs-1);
+}
 
-void ServerHandler::bubbleSort(){}
+void ServerHandler::bubbleSort(){
+    Sorter::bubbleSort(songs,NumberOfSongs);
+}
 
-void ServerHandler::radixSort(){}
+void ServerHandler::radixSort(){
+    Sorter::radixSort(songs,NumberOfSongs);
+}
+
+void ServerHandler::insertAlbum(Metadata* insert){
+    int i = 0;
+    for(Metadata* song: sortedAlbums){
+        if(song->album > insert->album){
+            break;
+        }
+        i++;
+    }
+    sortedAlbums.insert(sortedAlbums.begin()+i,insert);
+}
+
+std::vector<Metadata*> ServerHandler::searchAlbums(std::string album) {
+    std::vector<Metadata*> response;
+    for(Metadata* song : sortedAlbums){
+        if(song->album == album){
+            response.push_back(song);
+        }
+    }
+    return response;
+}

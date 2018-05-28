@@ -9,7 +9,7 @@ using namespace std;
 /* creating new node */
 BTreeNode* BTree::createNode(Metadata* val, BTreeNode *child) {
     BTreeNode *newNode = new BTreeNode;
-    newNode->val[1] = val;
+    newNode->val[1].push_back(val); //?
     newNode->count = 1;
     newNode->link[0] = root;
     newNode->link[1] = child;
@@ -24,7 +24,7 @@ void BTree::addValToNode(Metadata* val, int pos, BTreeNode *node, BTreeNode *chi
         node->link[j + 1] = node->link[j];
         j--;
     }
-    node->val[j + 1] = val;
+    node->val[j + 1].push_back(val);
     node->link[j + 1] = child;
     node->count++;
 }
@@ -54,7 +54,7 @@ void BTree::splitNode(Metadata* val, Metadata** pval, int pos, BTreeNode *node,B
     else {
         addValToNode(val, pos - median, *newNode, child);
     }
-    *pval = node->val[node->count];
+    *pval = node->val[node->count].at(0);
     (*newNode)->link[0] = node->link[node->count];
     node->count--;
 }
@@ -69,14 +69,15 @@ int BTree::setValueInNode(Metadata* val, Metadata **pval,BTreeNode *node, BTreeN
         return 1;
     }
 
-    if (val->name < node->val[1]->name) {
+    if (val->name < node->val[1].at(0)->name) {
         pos = 0;
     }
     else {
         for (pos = node->count;
-             (val->name < node->val[pos]->name && pos > 1); pos--);
-        if (val->name == node->val[pos]->name) {
-            cout<<"Duplicates not allowed\n";
+             (val->name < node->val[pos].at(0)->name && pos > 1); pos--);
+
+        if (val->name == node->val[pos].at(0)->name) {
+            node->val[pos].push_back(val);
             return 0;
         }
     }
@@ -230,14 +231,14 @@ void BTree::adjustNode(BTreeNode *myNode, int pos) {
 int BTree::delValFromNode(Metadata* val,BTreeNode *myNode) {
     int pos, flag = 0;
     if (myNode) {
-        if (val->name < myNode->val[1]->name) {
+        if (val->name < myNode->val[1].at(0)->name) {
             pos = 0;
             flag = 0;
         }
         else {
             for (pos = myNode->count;
-                 (val->name < myNode->val[pos]->name && pos > 1); pos--);
-            if (val->name == myNode->val[pos]->name) {
+                 (val->name < myNode->val[pos].at(0)->name && pos > 1); pos--);
+            if (val->name == myNode->val[pos].at(0)->name) {
                 flag = 1;
             }
             else {
@@ -247,7 +248,7 @@ int BTree::delValFromNode(Metadata* val,BTreeNode *myNode) {
         if (flag) {
             if (myNode->link[pos - 1]) {
                 copySuccessor(myNode, pos);
-                flag = delValFromNode(myNode->val[pos], myNode->link[pos]);
+                flag = delValFromNode(myNode->val[pos].at(0), myNode->link[pos]);
                 if (flag == 0) {
                     cout<<"Given data is not present in B-Tree\n";
                 }
@@ -286,24 +287,27 @@ void BTree::_delete(Metadata* val,BTreeNode *myNode) {
     return;
 }
 
-Metadata* BTree::search(std::string name) {
+std::vector<Metadata*> BTree::search(std::string name) {
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     return searchAux(name,root);
 }
 
 /* B-Tree Traversal */
-Metadata* BTree::searchAux(std::string name,BTreeNode *myNode) {
+std::vector<Metadata*> BTree::searchAux(std::string name,BTreeNode *myNode) {
     int i;
     if (myNode) {
         for (i = 0; i < myNode->count; i++) {
-            Metadata* search = searchAux(name,myNode->link[i]);
-            if(search != nullptr){
+            std::vector<Metadata*> search = searchAux(name,myNode->link[i]);
+            if(search.size() != 0){
                 return search;
             }
-            if (myNode->val[i + 1]->name == name){
+            std::string name2 =myNode->val[i + 1].at(0)->name;
+            std::transform(name2.begin(), name2.end(), name2.begin(), ::tolower);
+            if (name2 == name){
                 return (myNode->val[i + 1]);
             };
         }
     }
-    return nullptr;
+    return std::vector<Metadata*>();
 }
 

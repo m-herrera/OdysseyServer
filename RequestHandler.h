@@ -12,7 +12,7 @@
 #include "ServerHandler.h"
 #include <boost/property_tree/xml_parser.hpp>
 #include "base64.h"
-
+#include <regex>
 
 class RequestHandler {
 public:
@@ -38,6 +38,8 @@ private:
     static void generateSalt(char* buffer, int size);
     static boost::property_tree::ptree getSongs(int page);
     static boost::property_tree::ptree getChunk(std::string parh,int page);
+    static boost::property_tree::ptree handleSearch(boost::property_tree::ptree xmlRequest);
+    static boost::property_tree::ptree handleLyricsGuessing(boost::property_tree::ptree xmlRequest);
 };
 
 
