@@ -24,7 +24,7 @@ AVLTree* ServerHandler::songsArtists = nullptr;
 
 BinarySearchTree* ServerHandler::users = nullptr;
 
-const int ServerHandler::pageSize = 5;
+const int ServerHandler::pageSize = 10;
 
 const int ServerHandler::chunkSize = 40000;
 
