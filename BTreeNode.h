@@ -11,7 +11,7 @@
 #define MIN 2
 
 struct BTreeNode {
-    Metadata* val[MAX + 1];
+    std::vector<Metadata*> val[MAX + 1];
     int count;
     BTreeNode *link[MAX + 1];
 };
