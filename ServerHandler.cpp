@@ -101,24 +101,15 @@ void ServerHandler::updateSongs(){
     boost::property_tree::ptree data;
     boost::property_tree::read_json(metadataPath,data);
     boost::property_tree::ptree* songs = new boost::property_tree::ptree();
-    updateSongsAux(songs,songsNames->root);
+    for(Metadata* data : ServerHandler::songs)
+        songs->push_back(std::make_pair("",data->toJSON()));
+
     data.erase("songs");
     data.add_child("songs",*songs);
     boost::property_tree::write_json(metadataPath,data);
     delete(songs);
 }
 
-void ServerHandler::updateSongsAux(boost::property_tree::ptree* songs, BTreeNode* parent){
-    int i;
-    if (parent) {
-        for (i = 0; i < parent->count; i++) {
-            updateSongsAux(songs,parent->link[i]);
-            for(Metadata* data : parent->val[i + 1])
-                songs->push_back(std::make_pair("",data->toJSON()));
-        }
-        updateSongsAux(songs,parent->link[i]);
-    }
-}
 
 void ServerHandler::quickSort(){
     Sorter::quickSort(songs,0,NumberOfSongs-1);

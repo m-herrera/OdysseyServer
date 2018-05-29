@@ -116,7 +116,6 @@ private:
     static void loadUsers();
     static void loadSongs();
     static void updateUsersAux(boost::property_tree::ptree* users, TreeNode* parent);
-    static void updateSongsAux(boost::property_tree::ptree* users, BTreeNode* parent);
 
 };
 
