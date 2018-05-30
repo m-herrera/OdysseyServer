@@ -67,7 +67,7 @@ void ServerHandler::loadUsers() {
 void ServerHandler::loadSongs() {
 
     if (songsNames == nullptr){
-        songsNames = new BTree();
+        songsNames = new BTree(5);
     }
     if (songsArtists == nullptr){
         songsArtists = new AVLTree();
