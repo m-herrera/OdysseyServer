@@ -26,7 +26,7 @@ BinarySearchTree* ServerHandler::users = nullptr;
 
 const int ServerHandler::pageSize = 10;
 
-const int ServerHandler::chunkSize = 40000;
+const int ServerHandler::chunkSize = 327680;
 
 std::string ServerHandler::sortBy = "name";
 
