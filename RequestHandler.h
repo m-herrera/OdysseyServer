@@ -40,6 +40,10 @@ private:
     static boost::property_tree::ptree getChunk(std::string parh,int page);
     static boost::property_tree::ptree handleSearch(boost::property_tree::ptree xmlRequest);
     static boost::property_tree::ptree handleLyricsGuessing(boost::property_tree::ptree xmlRequest);
+    static boost::property_tree::ptree handleBackTracking(boost::property_tree::ptree xmlRequest);
+    static void split(const std::string &s, char delim, std::vector<std::string> &elems);
+    static boost::property_tree::ptree handleChangeMetadata(boost::property_tree::ptree xmlRequest);
+
 };
 
 

@@ -36,6 +36,9 @@ std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
         else if(opCode == "7"){
             response = handleLyricsGuessing(xmlRequest);
         }
+        else if(opCode == "8"){
+            response = handleBackTracking(xmlRequest);
+        }
 
     }
     boost::property_tree::ptree responseXML;
@@ -151,6 +154,10 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
             trackFile.write(rawData.data(), rawData.size());
         }else if(v.first == "lyrics"){
             song->lyrics = v.second.data();
+        }else if(v.first == "genre"){
+            song->genre = v.second.data();
+        }else if(v.first == "year"){
+            song->year = v.second.data();
         }
     }
     std::vector<Metadata*> songs;
@@ -290,9 +297,11 @@ boost::property_tree::ptree RequestHandler::handlePlay(boost::property_tree::ptr
     std::cout<< "Play Request" <<std::endl;
     boost::property_tree::ptree responseXML;
     Metadata* song = nullptr;
-    std::string name = " ";
-    std::string album = " ";
-    std::string artist = " ";
+    std::string name = "";
+    std::string album = "";
+    std::string artist = "";
+    std::string genre = "";
+    std::string year = "";
     //std::string lyrics = " ";
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "name"){
@@ -303,22 +312,23 @@ boost::property_tree::ptree RequestHandler::handlePlay(boost::property_tree::ptr
             artist = v.second.data();
         }/*else if(v.first == "lyrics"){
             lyrics = v.second.data();
-        }*/
+        }*/else if(v.first == "genre"){
+            genre = v.second.data();
+        }else if(v.first == "year"){
+            year = v.second.data();
+        }
         else if(v.first == "chunk"){
             std::vector<Metadata*> songs;
             songs = ServerHandler::songsNames->search(name);
-            if (songs.size() == 0){
+            for(Metadata* data :songs){
+                if(data->album == album && data->artist == artist /*&& data->genre == genre*/ && data->year == year){ //&& data->lyrics == lyrics
+                    song = data;
+                    break;
+                }
+            }
+            if (song == nullptr){
                 responseXML.put("error",true);
                 responseXML.put("description","song doesn't exist");
-                break;
-            }
-            while(song == nullptr){
-                for(Metadata* data :songs){
-                    if(data->album == album && data->artist == artist){ //&& data->lyrics == lyrics
-                        song = data;
-                        break;
-                    }
-                }
                 break;
             }
             std::cout<<song->name<<std::endl;
@@ -451,43 +461,115 @@ boost::property_tree::ptree RequestHandler::handleLyricsGuessing(boost::property
     return responseXML;
 }
 
-/*
+
 boost::property_tree::ptree RequestHandler::handleBackTracking(boost::property_tree::ptree xmlRequest){
     std::cout<< "Lyrics BackTracking Request" <<std::endl;
     boost::property_tree::ptree responseXML;
-    std::string phrase = "";
+    std::vector<std::string> phrase;
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "phrase") {
-            phrase = v.second.data();
-            std::transform(phrase.begin(), phrase.end(), phrase.begin(), ::tolower);
+            std::string temp = v.second.data();
+            std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+            split(temp,' ',phrase);
         }
     }
 
-    std::set<std::string> population;
-    std::regex population_regex(left + "(.*?)\\s" + right);
+    int phraseSize = phrase.size();
+    std::set<Metadata *> searchedSongs;
+
     for (Metadata *data : ServerHandler::songs) {
+        std::vector<std::string> population;
         std::string lyrics = data->lyrics;
         std::transform(lyrics.begin(), lyrics.end(), lyrics.begin(), ::tolower);
-        auto words_begin = std::sregex_iterator(lyrics.begin(), lyrics.end(), population_regex);
-        auto words_end = std::sregex_iterator();
-        for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-            std::string match_str = i->str();
-            match_str.erase(0,left.length());
-            match_str.erase(match_str.length()-right.length(),match_str.length());
-            population.insert(match_str);
+
+        split(lyrics,' ',population);
+        int i = 0;
+        for (std::string word : population) {
+            if(i == phraseSize){
+                searchedSongs.insert(data);
+                break;
+            }else if(word == phrase.at(i)){
+                i++;
+            }else{
+                i = 0;
+            }
         }
     }
 
-    boost::property_tree::ptree tree;
     int i = 0;
-    for(std::string word :population) {
+    boost::property_tree::ptree tree;
+    for(Metadata* data :searchedSongs) {
         i++;
-        tree.add("word",word);
+        tree.push_back(std::make_pair("song", data->toXML()));
     }
 
-    responseXML.put("numberOfWords",i);
-    responseXML.add_child("words",tree);
+    responseXML.put("numberOfSongs",i);
+    responseXML.add_child("songs",tree);
 
     return responseXML;
 }
-*/
+
+
+boost::property_tree::ptree RequestHandler::handleChangeMetadata(boost::property_tree::ptree xmlRequest){
+    std::cout<< "Change Metadata Request" <<std::endl;
+    boost::property_tree::ptree responseXML;
+    std::string name,album,artist,genre,year;
+
+    std::string newName,newAlbum,newArtist,newGenre,newYear,newLyrics;
+
+    for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
+        if(v.first == "name"){
+            name = v.second.data();
+        }else if(v.first == "album"){
+            album = v.second.data();
+        }else if(v.first == "artist"){
+            artist = v.second.data();
+        }/*else if(v.first == "lyrics"){
+            lyrics = v.second.data();
+        }*/else if(v.first == "genre"){
+            genre = v.second.data();
+        }else if(v.first == "year"){
+            year = v.second.data();
+        }else if(v.first == "newName"){
+            newName = v.second.data();
+        }else if(v.first == "newAlbum"){
+            newAlbum = v.second.data();
+        }else if(v.first == "newArtist"){
+            newArtist = v.second.data();
+        }else if(v.first == "newGenre"){
+            newGenre = v.second.data();
+        }else if(v.first == "newYear"){
+            newYear = v.second.data();
+        }else if(v.first == "newLyrics"){
+            newLyrics = v.second.data();
+        }
+    }
+
+    std::vector<Metadata*> songs = ServerHandler::songsNames->search(name);
+    Metadata* song = nullptr;
+    for(Metadata* data: songs){
+        if(data->album == album && data->artist == artist){ //&& data->lyrics == lyrics
+            song = data;
+            song->name = newName;
+            song->album = newAlbum;
+            song->artist = newArtist;
+            song->genre = newGenre;
+            song->year = newYear;
+            song->lyrics = newLyrics;
+            break;
+        }
+    }
+    responseXML.put("error",false);
+    responseXML.put("description","Data changed successfully");
+    boost::property_tree::write_xml(std::cout,responseXML);
+    return responseXML;
+}
+
+void RequestHandler::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    elems.clear();
+    std::stringstream ss(s);
+    std::string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+}

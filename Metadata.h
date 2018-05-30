@@ -18,6 +18,8 @@ public:
     std::string album  = "";
     std::string pathName = "";
     std::string lyrics = "";
+    std::string genre = "";
+    std::string year = "";
 
     /**carga un json en el objeto
     *
