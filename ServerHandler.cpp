@@ -135,9 +135,12 @@ void ServerHandler::insertAlbum(Metadata* insert){
 }
 
 std::vector<Metadata*> ServerHandler::searchAlbums(std::string album) {
+    std::transform(album.begin(),album.end(),album.begin(),::tolower);
     std::vector<Metadata*> response;
     for(Metadata* song : sortedAlbums){
-        if(song->album == album){
+        std::string album2 = song->album;
+        std::transform(album2.begin(),album2.end(),album2.begin(),::tolower);
+        if( album2 == album){
             response.push_back(song);
         }
     }

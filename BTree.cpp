@@ -5,6 +5,7 @@
 
 
 std::vector<Metadata*> BTree::search(std::string k){
+    std::transform(k.begin(),k.end(),k.begin(),::tolower);
     std::vector<Metadata*> result;
     search(result,k);
     return result;

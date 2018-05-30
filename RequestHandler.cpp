@@ -402,7 +402,7 @@ boost::property_tree::ptree RequestHandler::getChunk(std::string path,int chunk)
 boost::property_tree::ptree RequestHandler::handleSearch(boost::property_tree::ptree xmlRequest){
     std::cout<< "Search Request" <<std::endl;
     boost::property_tree::ptree responseXML;
-    std::set<Metadata *> searchedSongs;
+    std::set<Metadata*> searchedSongs;
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "search") {
             std::string search = v.second.data();
@@ -415,7 +415,7 @@ boost::property_tree::ptree RequestHandler::handleSearch(boost::property_tree::p
             for (Metadata *data : ServerHandler::searchAlbums(search)) {
                 searchedSongs.insert(data);
             }
-
+            backTrack(search,searchedSongs);
         }
     }
     int i = 0;
@@ -447,15 +447,24 @@ boost::property_tree::ptree RequestHandler::handleLyricsGuessing(boost::property
         }
     }
 
+    std::regex population_regex(left + "(.*?)\\s" + right);
     std::set<std::string> population;
-
     for (Metadata *data : ServerHandler::songs) {
-
+        std::string lyrics = data->lyrics;
+        std::transform(lyrics.begin(), lyrics.end(), lyrics.begin(), ::tolower);
+        auto words_begin = std::sregex_iterator(lyrics.begin(), lyrics.end(), population_regex);
+        auto words_end = std::sregex_iterator();
+        for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+            std::string match_str = i->str();
+            match_str.erase(0, left.length());
+            match_str.erase(match_str.length() - right.length(), match_str.length());
+            population.insert(match_str);
+        }
     }
-
     boost::property_tree::ptree tree;
     int i = 0;
     for(std::string word :population) {
+        boost::property_tree::ptree tree;
         i++;
         tree.add("word",word);
     }
@@ -464,23 +473,43 @@ boost::property_tree::ptree RequestHandler::handleLyricsGuessing(boost::property
     responseXML.add_child("words",tree);
 
     return responseXML;
+
 }
 
 
 boost::property_tree::ptree RequestHandler::handleBackTracking(boost::property_tree::ptree xmlRequest){
     std::cout<< "Lyrics BackTracking Request" <<std::endl;
     boost::property_tree::ptree responseXML;
-    std::vector<std::string> phrase;
+    std::string temp;
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "phrase") {
-            std::string temp = v.second.data();
-            std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
-            split(temp,' ',phrase);
+            temp = v.second.data();
+
         }
     }
 
-    int phraseSize = phrase.size();
     std::set<Metadata *> searchedSongs;
+    backTrack(temp,searchedSongs);
+    int i = 0;
+    boost::property_tree::ptree tree;
+    for(Metadata* data :searchedSongs) {
+        i++;
+        tree.push_back(std::make_pair("song", data->toXML()));
+    }
+
+    responseXML.put("numberOfSongs",i);
+    responseXML.add_child("songs",tree);
+
+    return responseXML;
+}
+
+void RequestHandler::backTrack(std::string temp,std::set<Metadata *> & searchedSongs){
+    std::vector<std::string> phrase;
+    std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+    split(temp,' ',phrase);
+
+    int phraseSize = phrase.size();
+
 
     for (Metadata *data : ServerHandler::songs) {
         std::vector<std::string> population;
@@ -500,20 +529,7 @@ boost::property_tree::ptree RequestHandler::handleBackTracking(boost::property_t
             }
         }
     }
-
-    int i = 0;
-    boost::property_tree::ptree tree;
-    for(Metadata* data :searchedSongs) {
-        i++;
-        tree.push_back(std::make_pair("song", data->toXML()));
-    }
-
-    responseXML.put("numberOfSongs",i);
-    responseXML.add_child("songs",tree);
-
-    return responseXML;
 }
-
 
 boost::property_tree::ptree RequestHandler::handleChangeMetadata(boost::property_tree::ptree xmlRequest){
     std::cout<< "Change Metadata Request" <<std::endl;

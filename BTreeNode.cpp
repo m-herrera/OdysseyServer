@@ -49,25 +49,27 @@ void BTreeNode::search(std::vector<Metadata*>& v,std::string k)
 {
 // There are n keys and n+1 children, travers through n keys
 // and first n children
-int i;
-for (i = 0; i < n; i++)
-{
+    int i;
+    for (i = 0; i < n; i++)
+    {
 // If this is not leaf, then before printing key[i],
 // traverse the subtree rooted with child C[i].
 
-if (leaf == false)
-C[i]->search(v,k);
+        if (leaf == false)
+            C[i]->search(v,k);
 
-for (Metadata* data : keys[i]){
-if(data->name == k)
-v.push_back(data);
+        for (Metadata* data : keys[i]){
+            std::string n = data->name;
+            std::transform(n.begin(),n.end(),n.begin(),::tolower);
+            if(n == k)
+                v.push_back(data);
 
-}
+        }
 
-}
+    }
 // Print the subtree rooted with last child
-if (leaf == false)
-C[i]->search(v,k);
+    if (leaf == false)
+        C[i]->search(v,k);
 }
 
 

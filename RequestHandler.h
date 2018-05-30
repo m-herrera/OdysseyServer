@@ -13,6 +13,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include "base64.h"
 #include <regex>
+#include <set>
 
 class RequestHandler {
 public:
@@ -43,7 +44,7 @@ private:
     static boost::property_tree::ptree handleBackTracking(boost::property_tree::ptree xmlRequest);
     static void split(const std::string &s, char delim, std::vector<std::string> &elems);
     static boost::property_tree::ptree handleChangeMetadata(boost::property_tree::ptree xmlRequest);
-
+    static void backTrack(std::string temp,std::set<Metadata *> & searchedSongs);
 };
 
 
