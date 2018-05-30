@@ -39,6 +39,9 @@ std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
         else if(opCode == "8"){
             response = handleBackTracking(xmlRequest);
         }
+        else if(opCode == "9"){
+            response = handleChangeMetadata(xmlRequest);
+        }
 
     }
     boost::property_tree::ptree responseXML;
@@ -288,6 +291,8 @@ boost::property_tree::ptree RequestHandler::getSongs(int page){
     parent.put("pages",pages);
     parent.put("pageSize",ServerHandler::pageSize);
     parent.add_child("songs",tree);
+
+    boost::property_tree::write_xml(std::cout,parent);
     return parent;
 
 }
