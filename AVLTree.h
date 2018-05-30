@@ -39,6 +39,8 @@ public:
     */
     std::vector<Metadata*> search(std::string);
 
+    void empty();
+
 private:
     AVLTreeNode* insert(Metadata* x, AVLTreeNode* t);
     AVLTreeNode* singleRightRotate(AVLTreeNode* &t);
@@ -51,6 +53,7 @@ private:
     int height(AVLTreeNode* t);
     int getBalance(AVLTreeNode* t);
     void inorder(AVLTreeNode* t,std::vector<Metadata*> & list,std::string album);
+    void emptyAux(AVLTreeNode* t);
 };
 
 

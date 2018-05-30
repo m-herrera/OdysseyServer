@@ -31,6 +31,9 @@ public:
     void insert(Metadata* k);
 
     std::vector<Metadata*> search(std::string k);
+
+    void empty()
+    {  if (root != nullptr) root->empty(); }
 };
 
 

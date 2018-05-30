@@ -214,3 +214,16 @@ std::vector<Metadata*> AVLTree::search(std::string artist)
     inorder(root,response,artist);
     return response;
 }
+
+void AVLTree::empty(){
+    emptyAux(root);
+
+}
+
+void AVLTree::emptyAux(AVLTreeNode* t){
+    if(t == nullptr)
+        return;
+    emptyAux(t->left);
+    emptyAux(t->right);
+    delete(t);
+}

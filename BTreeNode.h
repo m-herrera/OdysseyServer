@@ -32,6 +32,7 @@ public:
     // A function to search a key in subtree rooted with this node.
     void search(std::vector<Metadata*> &vector,std::string k);   // returns NULL if k is not present.
 
+    void empty();
 // Make BTree friend of this so that we can access private members of this
 // class in BTree functions
     friend class BTree;

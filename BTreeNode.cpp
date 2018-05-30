@@ -44,6 +44,24 @@ void BTreeNode::traverse()
         C[i]->traverse();
 }
 
+void BTreeNode::empty(){
+    int i;
+    for (i = 0; i < n; i++)
+    {
+        // If this is not leaf, then before printing key[i],
+        // traverse the subtree rooted with child C[i].
+        if (leaf == false)
+            C[i]->empty();
+        if(C[i] != nullptr)
+            delete(C[i]);
+
+    }
+
+    // Print the subtree rooted with last child
+    if (leaf == false)
+        C[i]->empty();
+}
+
 // Function to search key k in subtree rooted with this node
 void BTreeNode::search(std::vector<Metadata*>& v,std::string k)
 {

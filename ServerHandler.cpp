@@ -66,12 +66,11 @@ void ServerHandler::loadUsers() {
 
 void ServerHandler::loadSongs() {
 
-    if (songsNames == nullptr){
+    if (songsNames == nullptr)
         songsNames = new BTree(5);
-    }
-    if (songsArtists == nullptr){
+
+    if (songsArtists == nullptr)
         songsArtists = new AVLTree();
-    }
 
     boost::property_tree::ptree data;
     boost::property_tree::read_json(metadataPath,data);
