@@ -3,311 +3,49 @@
 //
 #include "BTree.h"
 
-using namespace std;
 
-
-/* creating new node */
-BTreeNode* BTree::createNode(Metadata* val, BTreeNode *child) {
-    BTreeNode *newNode = new BTreeNode;
-    newNode->val[1].push_back(val); //?
-    newNode->count = 1;
-    newNode->link[0] = root;
-    newNode->link[1] = child;
-    return newNode;
+std::vector<Metadata*> BTree::search(std::string k){
+    std::vector<Metadata*> result;
+    search(result,k);
+    return result;
 }
 
-/* Places the value in appropriate position */
-void BTree::addValToNode(Metadata* val, int pos, BTreeNode *node, BTreeNode *child) {
-    int j = node->count;
-    while (j > pos) {
-        node->val[j + 1] = node->val[j];
-        node->link[j + 1] = node->link[j];
-        j--;
+// The main function that inserts a new key in this B-Tree
+void BTree::insert(Metadata* k)
+{
+    // If tree is empty
+    if (root == nullptr)
+    {
+        // Allocate memory for root
+        root = new BTreeNode(t, true);
+        root->keys[0].push_back(k);  // Insert key
+        root->n = 1;  // Update number of keys in root
     }
-    node->val[j + 1].push_back(val);
-    node->link[j + 1] = child;
-    node->count++;
-}
+    else // If tree is not empty
+    {
+        // If root is full, then tree grows in height
+        if (root->n == 2*t-1)
+        {
+            // Allocate memory for new root
+            BTreeNode *s = new BTreeNode(t, false);
 
-/* split the node */
-void BTree::splitNode(Metadata* val, Metadata** pval, int pos, BTreeNode *node,BTreeNode *child, BTreeNode **newNode) {
-    int median, j;
+            // Make old root as child of new root
+            s->C[0] = root;
 
-    if (pos > MIN)
-        median = MIN + 1;
-    else
-        median = MIN;
+            // Split the old root and move 1 key to the new root
+            s->splitChild(0, root);
 
-    *newNode = new BTreeNode;
-    j = median + 1;
-    while (j <= MAX) {
-        (*newNode)->val[j - median] = node->val[j];
-        (*newNode)->link[j - median] = node->link[j];
-        j++;
-    }
-    node->count = median;
-    (*newNode)->count = MAX - median;
+            // New root has two children now.  Decide which of the
+            // two children is going to have new key
+            int i = 0;
+            if (s->keys[0].at(0)->name < k->name)
+                i++;
+            s->C[i]->insertNonFull(k);
 
-    if (pos <= MIN) {
-        addValToNode(val, pos, node, child);
-    }
-    else {
-        addValToNode(val, pos - median, *newNode, child);
-    }
-    *pval = node->val[node->count].at(0);
-    (*newNode)->link[0] = node->link[node->count];
-    node->count--;
-}
-
-/* sets the value val in the node */
-int BTree::setValueInNode(Metadata* val, Metadata **pval,BTreeNode *node, BTreeNode **child) {
-
-    int pos;
-    if (!node) {
-        *pval = val;
-        *child = nullptr;
-        return 1;
-    }
-
-    if (val->name < node->val[1].at(0)->name) {
-        pos = 0;
-    }
-    else {
-        for (pos = node->count;
-             (val->name < node->val[pos].at(0)->name && pos > 1); pos--);
-
-        if (val->name == node->val[pos].at(0)->name) {
-            node->val[pos].push_back(val);
-            return 0;
+            // Change root
+            root = s;
         }
-    }
-    if (setValueInNode(val, pval, node->link[pos], child)) {
-        if (node->count < MAX) {
-            addValToNode(*pval, pos, node, *child);
-        }
-        else {
-            splitNode(*pval, pval, pos, node, *child, child);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-/* insert val in B-Tree */
-void BTree::insert(Metadata* val) {
-    int flag;
-    Metadata* i = new Metadata();
-    BTreeNode *child;
-
-    flag = setValueInNode(val, &i, root, &child);
-    if (flag)
-        root = createNode(i, child);
-}
-
-/* copy successor for the value to be deleted */
-void BTree::copySuccessor(BTreeNode *myNode, int pos) {
-    BTreeNode *dummy;
-    dummy = myNode->link[pos];
-
-    for (; dummy->link[0] != nullptr;)
-        dummy = dummy->link[0];
-    myNode->val[pos] = dummy->val[1];
-
-}
-
-/* removes the value from the given node and rearrange values */
-void BTree::removeVal(BTreeNode *myNode, int pos) {
-    int i = pos + 1;
-    while (i <= myNode->count) {
-        myNode->val[i - 1] = myNode->val[i];
-        myNode->link[i - 1] = myNode->link[i];
-        i++;
-    }
-    myNode->count--;
-}
-
-/* shifts value from parent to right child */
-void BTree::doRightShift(BTreeNode *myNode, int pos) {
-    BTreeNode *x = myNode->link[pos];
-    int j = x->count;
-
-    while (j > 0) {
-        x->val[j + 1] = x->val[j];
-        x->link[j + 1] = x->link[j];
-    }
-    x->val[1] = myNode->val[pos];
-    x->link[1] = x->link[0];
-    x->count++;
-
-    x = myNode->link[pos - 1];
-    myNode->val[pos] = x->val[x->count];
-    myNode->link[pos] = x->link[x->count];
-    x->count--;
-    return;
-}
-
-/* shifts value from parent to left child */
-void BTree::doLeftShift(BTreeNode *myNode, int pos) {
-    int j = 1;
-    BTreeNode *x = myNode->link[pos - 1];
-
-    x->count++;
-    x->val[x->count] = myNode->val[pos];
-    x->link[x->count] = myNode->link[pos]->link[0];
-
-    x = myNode->link[pos];
-    myNode->val[pos] = x->val[1];
-    x->link[0] = x->link[1];
-    x->count--;
-
-    while (j <= x->count) {
-        x->val[j] = x->val[j + 1];
-        x->link[j] = x->link[j + 1];
-        j++;
-    }
-    return;
-}
-
-/* merge nodes */
-void BTree::mergeNodes(BTreeNode *myNode, int pos) {
-    int j = 1;
-    BTreeNode *x1 = myNode->link[pos], *x2 = myNode->link[pos - 1];
-
-    x2->count++;
-    x2->val[x2->count] = myNode->val[pos];
-    x2->link[x2->count] = myNode->link[0];
-
-    while (j <= x1->count) {
-        x2->count++;
-        x2->val[x2->count] = x1->val[j];
-        x2->link[x2->count] = x1->link[j];
-        j++;
-    }
-
-    j = pos;
-    while (j < myNode->count) {
-        myNode->val[j] = myNode->val[j + 1];
-        myNode->link[j] = myNode->link[j + 1];
-        j++;
-    }
-    myNode->count--;
-    free(x1);
-}
-
-/* adjusts the given node */
-void BTree::adjustNode(BTreeNode *myNode, int pos) {
-    if (!pos) {
-        if (myNode->link[1]->count > MIN) {
-            doLeftShift(myNode, 1);
-        }
-        else {
-            mergeNodes(myNode, 1);
-        }
-    }
-    else {
-        if (myNode->count != pos) {
-            if (myNode->link[pos - 1]->count > MIN) {
-                doRightShift(myNode, pos);
-            }
-            else {
-                if (myNode->link[pos + 1]->count > MIN) {
-                    doLeftShift(myNode, pos + 1);
-                }
-                else {
-                    mergeNodes(myNode, pos);
-                }
-            }
-        }
-        else {
-            if (myNode->link[pos - 1]->count > MIN)
-                doRightShift(myNode, pos);
-            else
-                mergeNodes(myNode, pos);
-        }
+        else  // If root is not full, call insertNonFull for root
+            root->insertNonFull(k);
     }
 }
-
-/* delete val from the node */
-int BTree::delValFromNode(Metadata* val,BTreeNode *myNode) {
-    int pos, flag = 0;
-    if (myNode) {
-        if (val->name < myNode->val[1].at(0)->name) {
-            pos = 0;
-            flag = 0;
-        }
-        else {
-            for (pos = myNode->count;
-                 (val->name < myNode->val[pos].at(0)->name && pos > 1); pos--);
-            if (val->name == myNode->val[pos].at(0)->name) {
-                flag = 1;
-            }
-            else {
-                flag = 0;
-            }
-        }
-        if (flag) {
-            if (myNode->link[pos - 1]) {
-                copySuccessor(myNode, pos);
-                flag = delValFromNode(myNode->val[pos].at(0), myNode->link[pos]);
-                if (flag == 0) {
-                    cout<<"Given data is not present in B-Tree\n";
-                }
-            }
-            else {
-                removeVal(myNode, pos);
-            }
-        }
-        else {
-            flag = delValFromNode(val, myNode->link[pos]);
-        }
-        if (myNode->link[pos]) {
-            if (myNode->link[pos]->count < MIN)
-                adjustNode(myNode, pos);
-        }
-    }
-    return flag;
-}
-
-/* delete val from B-tree */
-
-void BTree::_delete(Metadata* val,BTreeNode *myNode) {
-    BTreeNode *tmp;
-    if (!delValFromNode(val, myNode)) {
-        cout<<"Given value is not present in B-Tree\n";
-        return;
-    }
-    else {
-        if (myNode->count == 0) {
-            tmp = myNode;
-            myNode = myNode->link[0];
-            free(tmp);
-        }
-    }
-    root = myNode;
-    return;
-}
-
-std::vector<Metadata*> BTree::search(std::string name) {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    return searchAux(name,root);
-}
-
-/* B-Tree Traversal */
-std::vector<Metadata*> BTree::searchAux(std::string name,BTreeNode *myNode) {
-    int i;
-    if (myNode) {
-        for (i = 0; i < myNode->count; i++) {
-            std::vector<Metadata*> search = searchAux(name,myNode->link[i]);
-            if(search.size() != 0){
-                return search;
-            }
-            std::string name2 =myNode->val[i + 1].at(0)->name;
-            std::transform(name2.begin(), name2.end(), name2.begin(), ::tolower);
-            if (name2 == name){
-                return (myNode->val[i + 1]);
-            };
-        }
-    }
-    return std::vector<Metadata*>();
-}
-

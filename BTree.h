@@ -9,45 +9,28 @@
 #include "Metadata.h"
 #include <iostream>
 
-class BTree{
+// A BTree
+class BTree
+{
+    BTreeNode *root; // Pointer to root node
+    int t;  // Minimum degree
 public:
-    /**
-     * elemento raíz
-     */
-    BTreeNode *root = nullptr;
+    // Constructor (Initializes tree as empty)
+    BTree(int _t)
+    {  root = nullptr;  t = _t; }
 
-    /**Agrega un elemento en el árbol
-     *
-     * @param val elemento por agregar
-     */
-    void insert(Metadata* val);
+    // function to traverse the tree
+    void traverse()
+    {  if (root != nullptr) root->traverse(); }
 
-    /**Elimina un elemento de la lista a partir de un nodo específico
-     *
-     * @param val elemento por eliminar
-     * @param myNode elemento a partir del cual eliminar
-     */
-    void _delete(Metadata* val,BTreeNode *myNode);
+    // function to search a key in this tree
+    void search(std::vector<Metadata*>& vector,std::string k)
+    {  return (root == nullptr)? void() : root->search(vector,k); }
 
-    /**Busca un elemento en el arbol
-     *
-     * @param elemento elemento buscado
-     * @return nullptr en caso de no encontrarlo
-     */
-    std::vector<Metadata*> search(std::string elemento);
-private:
-    BTreeNode* createNode(Metadata* val, BTreeNode *child);
-    void addValToNode(Metadata*val, int pos, BTreeNode *node, BTreeNode *child);
-    void splitNode(Metadata* val, Metadata** pval, int pos, BTreeNode *node,BTreeNode *child, BTreeNode **newNode);
-    int setValueInNode(Metadata* val, Metadata** pval,BTreeNode *node, BTreeNode **child);
-    void copySuccessor(BTreeNode *myNode, int pos);
-    void removeVal(BTreeNode *myNode, int pos);
-    void doRightShift(BTreeNode *myNode, int pos);
-    void doLeftShift(BTreeNode *myNode, int pos);
-    void mergeNodes(BTreeNode *myNode, int pos);
-    void adjustNode(BTreeNode *myNode, int pos);
-    int delValFromNode(Metadata* val,BTreeNode *myNode);
-    std::vector<Metadata*> searchAux(std::string,BTreeNode *myNode);
+    // The main function that inserts a new key in this B-Tree
+    void insert(Metadata* k);
+
+    std::vector<Metadata*> search(std::string k);
 };
 
 
