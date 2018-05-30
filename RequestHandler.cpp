@@ -406,6 +406,7 @@ boost::property_tree::ptree RequestHandler::handleSearch(boost::property_tree::p
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "search") {
             std::string search = v.second.data();
+            backTrack(search,searchedSongs);
             for (Metadata *data : ServerHandler::songsNames->search(search)) {
                 searchedSongs.insert(data);
             }
@@ -415,7 +416,7 @@ boost::property_tree::ptree RequestHandler::handleSearch(boost::property_tree::p
             for (Metadata *data : ServerHandler::searchAlbums(search)) {
                 searchedSongs.insert(data);
             }
-            backTrack(search,searchedSongs);
+
         }
     }
     int i = 0;
@@ -452,6 +453,8 @@ boost::property_tree::ptree RequestHandler::handleLyricsGuessing(boost::property
     for (Metadata *data : ServerHandler::songs) {
         std::string lyrics = data->lyrics;
         std::transform(lyrics.begin(), lyrics.end(), lyrics.begin(), ::tolower);
+        std::replace(lyrics.begin(),lyrics.end(),'\n',' ');
+        std::replace(lyrics.begin(),lyrics.end(),',',' ');
         auto words_begin = std::sregex_iterator(lyrics.begin(), lyrics.end(), population_regex);
         auto words_end = std::sregex_iterator();
         for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
@@ -464,7 +467,6 @@ boost::property_tree::ptree RequestHandler::handleLyricsGuessing(boost::property
     boost::property_tree::ptree tree;
     int i = 0;
     for(std::string word :population) {
-        boost::property_tree::ptree tree;
         i++;
         tree.add("word",word);
     }
@@ -515,7 +517,8 @@ void RequestHandler::backTrack(std::string temp,std::set<Metadata *> & searchedS
         std::vector<std::string> population;
         std::string lyrics = data->lyrics;
         std::transform(lyrics.begin(), lyrics.end(), lyrics.begin(), ::tolower);
-
+        std::replace(lyrics.begin(),lyrics.end(),'\n',' ');
+        std::replace(lyrics.begin(),lyrics.end(),',',' ');
         split(lyrics,' ',population);
         int i = 0;
         for (std::string word : population) {
@@ -580,6 +583,7 @@ boost::property_tree::ptree RequestHandler::handleChangeMetadata(boost::property
             break;
         }
     }
+    ServerHandler::updateSongs();
     responseXML.put("error",false);
     responseXML.put("description","Data changed successfully");
     boost::property_tree::write_xml(std::cout,responseXML);
