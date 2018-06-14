@@ -8,7 +8,7 @@ find_package(Boost COMPONENTS system REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
-    add_executable(OdysseyServer main.cpp Server.h Server.cpp Session.h Session.cpp base64.cpp base64.h RequestHandler.cpp RequestHandler.h User.cpp User.h ServerHandler.cpp ServerHandler.h BinarySearchTree.cpp BinarySearchTree.h BinarySearchTreeNode.cpp BinarySearchTreeNode.h BTree.cpp BTreeNode.h BTree.h AVLTreeNode.h AVLTree.cpp AVLTree.h Metadata.h Sorter.cpp Sorter.h Metadata.cpp BTreeNode.cpp)
+    add_executable(OdysseyServer main.cpp Server.h Server.cpp Session.h Session.cpp base64.cpp base64.h RequestHandler.cpp RequestHandler.h Huffman/HuffmanCodeUltimate.cpp User.cpp User.h ServerHandler.cpp ServerHandler.h BinarySearchTree.cpp BinarySearchTree.h BinarySearchTreeNode.cpp BinarySearchTreeNode.h BTree.cpp BTreeNode.h BTree.h AVLTreeNode.h AVLTree.cpp AVLTree.h Metadata.h Sorter.cpp Sorter.h Metadata.cpp BTreeNode.cpp Huffman/HuffmanCodeUltimate.h Huffman/Node.h)
     target_link_libraries(OdysseyServer ${Boost_LIBRARIES})
 endif()
 
