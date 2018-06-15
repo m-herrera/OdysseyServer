@@ -63,20 +63,24 @@ void HuffmanCodeUltimate::buildHuffmanTree(string text) {
         freq[ch]++;
     }
 
-    priority_queue<Node*, vector<Node*>, comp>* pq= new priority_queue<Node*, vector<Node*>, comp>();
+    queue<Node*>* pq= new queue<Node*>();
     for (auto pair: freq) {
-        pq->push(getNode(pair.first, pair.second, nullptr, nullptr));
+        Node* nodo=getNode(pair.first, pair.second, nullptr, nullptr);
+        pq->push(nodo);
+        cout<<nodo->ch;
     }
     while (pq->size() != 1)
     {
-        Node *left = pq->top();pq->pop();
-        Node *right = pq->top();pq->pop();
+        Node *left = pq->front();
+        pq->pop();
+        Node *right = pq->front();
+        pq->pop();
         int sum = left->freq +right->freq;
         pq->push(getNode('\0', sum, left, right));
     }
 
 
-    Node* root = pq->top();
+    Node* root = pq->front();
     map<char, string> huffmanCode;
     encode(root, "", huffmanCode);
 
@@ -101,7 +105,7 @@ void HuffmanCodeUltimate::buildHuffmanTree(string text) {
 int main()
 {
 
-    HuffmanCodeUltimate::buildHuffmanTree("hola");
+    HuffmanCodeUltimate::buildHuffmanTree("Que onda que pez");
 
 
     return 0;
