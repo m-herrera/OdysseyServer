@@ -112,9 +112,11 @@ public:
      */
     static void radixSort();
 
+    static void loadSongs();
+
+
 private:
     static void loadUsers();
-    static void loadSongs();
     static void updateUsersAux(boost::property_tree::ptree* users, TreeNode* parent);
 
 };

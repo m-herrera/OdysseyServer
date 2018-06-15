@@ -531,8 +531,11 @@ boost::property_tree::ptree RequestHandler::handleDeletion(boost::property_tree:
 
     ServerHandler::sortedAlbums.clear();
     ServerHandler::songsArtists->empty();
+    ServerHandler::songsArtists = nullptr;
     ServerHandler::songsNames->empty();
-    ServerHandler::loadSetUp();
+    ServerHandler::songsNames = nullptr;
+    ServerHandler::loadSongs();
+
 
     responseXML.put("error",false);
     responseXML.put("description","song deleted");

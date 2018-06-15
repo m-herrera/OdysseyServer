@@ -6,13 +6,13 @@
 #include "ServerHandler.h"
 #include "Sorter.h"
 
-const std::string ServerHandler::trackPath  ="/home/marco/Desktop/Odyssey++/Tracks/";
+const std::string ServerHandler::trackPath  ="/Users/Jai/Desktop/Tracks/";
 
-const std::string ServerHandler::metadataPath  ="/home/marco/Desktop/Odyssey++/metadata.json";
+const std::string ServerHandler::metadataPath  ="/Users/Jai/Desktop/metadata.json";
 
-const std::string ServerHandler::metadataTemplate  ="{\"users\" : [], \n  \"songs\" : []}";
+const std::string ServerHandler::metadataTemplate  ="{\"users\" : [], \n  \"songs\" : [], \"count\" : 0}";
 
-int ServerHandler::NumberOfSongs = 0;
+int ServerHandler::NumberOfSongs;
 
 std::vector<Metadata*> ServerHandler::songs;
 
@@ -26,7 +26,8 @@ BinarySearchTree* ServerHandler::users = nullptr;
 
 const int ServerHandler::pageSize = 10;
 
-const int ServerHandler::chunkSize = 327680;
+//const int ServerHandler::chunkSize = 327680;
+const int ServerHandler::chunkSize = 3145728;
 
 std::string ServerHandler::sortBy = "name";
 
@@ -65,7 +66,7 @@ void ServerHandler::loadUsers() {
 }
 
 void ServerHandler::loadSongs() {
-
+    songs = std::vector<Metadata*>();
     if (songsNames == nullptr)
         songsNames = new BTree(5);
 
@@ -81,8 +82,9 @@ void ServerHandler::loadSongs() {
         songsNames->insert(song);
         songs.push_back(song);
         insertAlbum(song);
-        NumberOfSongs++;
     }
+    int a = atoi(data.get<std::string>("count").data());
+    NumberOfSongs = a;
 }
 
 void ServerHandler::loadSetUp(){
@@ -104,6 +106,8 @@ void ServerHandler::updateSongs(){
         songs->push_back(std::make_pair("",data->toJSON()));
 
     data.erase("songs");
+    data.erase("count");
+    data.put("count",NumberOfSongs);
     data.add_child("songs",*songs);
     boost::property_tree::write_json(metadataPath,data);
     delete(songs);
@@ -111,15 +115,15 @@ void ServerHandler::updateSongs(){
 
 
 void ServerHandler::quickSort(){
-    Sorter::quickSort(songs,0,NumberOfSongs-1);
+    Sorter::quickSort(songs,0,songs.size()-1);
 }
 
 void ServerHandler::bubbleSort(){
-    Sorter::bubbleSort(songs,NumberOfSongs);
+    Sorter::bubbleSort(songs,songs.size());
 }
 
 void ServerHandler::radixSort(){
-    Sorter::radixSort(songs,NumberOfSongs);
+    Sorter::radixSort(songs,songs.size());
 }
 
 void ServerHandler::insertAlbum(Metadata* insert){

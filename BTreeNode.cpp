@@ -16,6 +16,9 @@ BTreeNode::BTreeNode(int t1, bool leaf1)
     // and child pointers
     keys = new std::vector<Metadata*>[2*t-1];
     C = new BTreeNode *[2*t];
+    for(int i = 0; i < 2*t; i++){
+        C[i] = nullptr;
+    }
 
     // Initialize the number of keys as 0
     n = 0;
