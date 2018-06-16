@@ -5,7 +5,7 @@
 #include <set>
 #include "RequestHandler.h"
 #include "Sorter.h"
-
+#include <cppconn/statement.h>
 
 std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
     boost::property_tree::ptree response;
@@ -104,8 +104,8 @@ boost::property_tree::ptree RequestHandler::handleRegistration(boost::property_t
             std::string encryptedPassword = encryptPassword(v.second.data());
             newUser->setPassword(encryptedPassword);
         }
-        else if(v.first == "age"){
-            newUser->setAge(std::stoi(v.second.data()));
+        else if(v.first == "birthday"){
+            newUser->setBirthday(v.second.data());
         }
         else if(v.first == "genres"){
             std::vector<std::string> genres;
@@ -130,8 +130,8 @@ boost::property_tree::ptree RequestHandler::handleRegistration(boost::property_t
     }else{
         response.put("description","successful registration");
         response.put("status",true);
+        newUser->toDB();
     }
-    ServerHandler::updateUsers();
     return response;
 }
 
@@ -160,7 +160,9 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
         }else if(v.first == "genre"){
             song->genre = v.second.data();
         }else if(v.first == "year"){
-            song->year = v.second.data();
+            song->year = std::atoi(v.second.data().data());
+        }else if(v.first == "type"){
+            song->type = v.second.data() != "song";
         }
     }
     std::vector<Metadata*> songs;
@@ -181,7 +183,6 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
                     response.put("status",false);
 
                     delete(song);
-
                     return response;
                 }
             }
@@ -193,7 +194,7 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
     ServerHandler::songsArtists->insert(song);
     ServerHandler::songs.push_back(song);
     ServerHandler::insertAlbum(song);
-    ServerHandler::updateSongs();
+    song->toDB();
     trackFile.close();
 
 
@@ -306,7 +307,7 @@ boost::property_tree::ptree RequestHandler::handlePlay(boost::property_tree::ptr
     std::string album = "";
     std::string artist = "";
     std::string genre = "";
-    std::string year = "";
+    int year = 0;
     //std::string lyrics = " ";
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "name"){
@@ -320,7 +321,7 @@ boost::property_tree::ptree RequestHandler::handlePlay(boost::property_tree::ptr
         }*/else if(v.first == "genre"){
             genre = v.second.data();
         }else if(v.first == "year"){
-            year = v.second.data();
+            year = std::atoi(v.second.data().data());
         }
         else if(v.first == "chunk"){
             std::vector<Metadata*> songs;
@@ -488,7 +489,7 @@ boost::property_tree::ptree RequestHandler::handleDeletion(boost::property_tree:
     std::string album = "";
     std::string artist = "";
     std::string genre = "";
-    std::string year = "";
+    int year = 0;
     //std::string lyrics = " ";
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")) {
         if (v.first == "name") {
@@ -502,7 +503,7 @@ boost::property_tree::ptree RequestHandler::handleDeletion(boost::property_tree:
         }*/else if (v.first == "genre") {
             genre = v.second.data();
         } else if (v.first == "year") {
-            year = v.second.data();
+            year = std::atoi(v.second.data().data());
         }
     }
 
@@ -524,14 +525,27 @@ boost::property_tree::ptree RequestHandler::handleDeletion(boost::property_tree:
 
     ServerHandler::songs.erase(std::remove(ServerHandler::songs.begin(), ServerHandler::songs.end(), song), ServerHandler::songs.end());
     delete(song);
-    ServerHandler::updateSongs();
+
+    sql::Statement* stmt = ServerHandler::dbConnection->createStatement();
+
+    std::string command = "DELETE FROM Multimedia WHERE name = "+name+" AND album = "+ album+" AND artist = "+artist;
+    stmt->execute(command);
+
+    stmt->close();
+    delete(stmt);
+
     for(Metadata* data :ServerHandler::songs){
         delete(data);
     }
 
     ServerHandler::sortedAlbums.clear();
     ServerHandler::songsArtists->empty();
+    delete(ServerHandler::songsArtists);
+    ServerHandler::songsArtists = nullptr;
     ServerHandler::songsNames->empty();
+    delete(ServerHandler::songsNames);
+    ServerHandler::songsNames = nullptr;
+
     ServerHandler::loadSetUp();
 
     responseXML.put("error",false);
@@ -574,7 +588,8 @@ boost::property_tree::ptree RequestHandler::handleChangeMetadata(boost::property
     boost::property_tree::ptree responseXML;
     std::string name,album,artist,genre,year;
 
-    std::string newName,newAlbum,newArtist,newGenre,newYear,newLyrics;
+    std::string newName,newAlbum,newArtist,newGenre,newLyrics;
+    int newYear = 0;
 
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "name"){
@@ -598,7 +613,7 @@ boost::property_tree::ptree RequestHandler::handleChangeMetadata(boost::property
         }else if(v.first == "newGenre"){
             newGenre = v.second.data();
         }else if(v.first == "newYear"){
-            newYear = v.second.data();
+            newYear = std::atoi(v.second.data().data());
         }else if(v.first == "newLyrics"){
             newLyrics = v.second.data();
         }
@@ -618,13 +633,22 @@ boost::property_tree::ptree RequestHandler::handleChangeMetadata(boost::property
             break;
         }
     }
-    ServerHandler::updateSongs();
+
+    sql::Statement* stmt = ServerHandler::dbConnection->createStatement();
+
+    std::string command = "UPDATE Multimedia SET name = '"+newName+"',artist = '"+newArtist+"',album = '"+
+                          newAlbum+"',lyrics = '"+newLyrics+"',genre = '"+newGenre+"',year = "+std::to_string(newYear) + " WHERE name = "+name+" AND album = "+
+                          album+" AND artist = "+artist;
+    stmt->execute(command);
+
+    stmt->close();
+    delete(stmt);
+
     responseXML.put("error",false);
     responseXML.put("description","Data changed successfully");
     boost::property_tree::write_xml(std::cout,responseXML);
     return responseXML;
 }
-
 void RequestHandler::split(const std::string &s, char delim, std::vector<std::string> &elems) {
     elems.clear();
     std::stringstream ss(s);

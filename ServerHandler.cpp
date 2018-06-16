@@ -5,12 +5,10 @@
 
 #include "ServerHandler.h"
 #include "Sorter.h"
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
 
 const std::string ServerHandler::trackPath  ="/home/marco/Desktop/Odyssey++/Tracks/";
-
-const std::string ServerHandler::metadataPath  ="/home/marco/Desktop/Odyssey++/metadata.json";
-
-const std::string ServerHandler::metadataTemplate  ="{\"users\" : [], \n  \"songs\" : []}";
 
 int ServerHandler::NumberOfSongs = 0;
 
@@ -24,47 +22,41 @@ AVLTree* ServerHandler::songsArtists = nullptr;
 
 BinarySearchTree* ServerHandler::users = nullptr;
 
+sql::Connection* ServerHandler::dbConnection = nullptr;
+
 const int ServerHandler::pageSize = 10;
 
 const int ServerHandler::chunkSize = 327680;
 
 std::string ServerHandler::sortBy = "name";
 
-void ServerHandler::updateUsers(){
-    boost::property_tree::ptree data;
-    boost::property_tree::read_json(metadataPath,data);
-    boost::property_tree::ptree* users2 = new boost::property_tree::ptree();
-    updateUsersAux(users2,users->root);
-    data.erase("users");
-    data.add_child("users",*users2);
-    boost::property_tree::write_json(metadataPath,data);
-    delete(users2);
-}
-
-void ServerHandler::updateUsersAux(boost::property_tree::ptree* users, TreeNode* parent){
-    if(parent == nullptr){
-        return;
-    }
-    updateUsersAux(users,parent->left);
-    users->push_back(std::make_pair("",parent->data->toJSON()));
-    updateUsersAux(users,parent->right);
+void ServerHandler::loadSetUp(){
+    loadUsers();
+    loadMetadata();
 }
 
 void ServerHandler::loadUsers() {
     if (users == nullptr){
         users = new BinarySearchTree();
     }
-
-    boost::property_tree::ptree data;
-    boost::property_tree::read_json(metadataPath,data);
-    for(boost::property_tree::ptree::value_type const& v : data.get_child("users")){
+    sql::Statement* stmt = dbConnection->createStatement();
+    sql::ResultSet* result = stmt->executeQuery("SELECT * FROM Users");
+    while(result->next()){
         User* newUser = new User();
-        newUser->fromJSON(v.second);
+        newUser->setUsername(result->getString("user_name"));
+        newUser->setFirstName(result->getString("first_name"));
+        newUser->setLastName(result->getString("last_name"));
+        newUser->setPassword(result->getString("password"));
+        newUser->setBirthday(result->getString("birthday"));
         users->insert(newUser);
     }
+    stmt->close();
+    result->close();
+    delete(stmt);
+    delete(result);
 }
 
-void ServerHandler::loadSongs() {
+void ServerHandler::loadMetadata() {
 
     if (songsNames == nullptr)
         songsNames = new BTree(5);
@@ -72,41 +64,29 @@ void ServerHandler::loadSongs() {
     if (songsArtists == nullptr)
         songsArtists = new AVLTree();
 
-    boost::property_tree::ptree data;
-    boost::property_tree::read_json(metadataPath,data);
-    for(boost::property_tree::ptree::value_type const& v : data.get_child("songs")){
-        Metadata* song = new Metadata();
-        song->fromJSON(v.second);
-        songsArtists->insert(song);
-        songsNames->insert(song);
-        songs.push_back(song);
-        insertAlbum(song);
+    sql::Statement* stmt = dbConnection->createStatement();
+    sql::ResultSet* result = stmt->executeQuery("SELECT * FROM Multimedia");
+    while(result->next()){
+        Metadata* metadata = new Metadata();
+        metadata->name = result->getString("name");
+        metadata->artist = result->getString("artist");
+        metadata->album = result->getString("album");
+        metadata->pathName = result->getString("path");
+        metadata->lyrics = result->getString("lyrics");
+        metadata->genre = result->getString("genre");
+        metadata->year = result->getInt("year");
+        metadata->type = result->getBoolean("type");
+
+        songsArtists->insert(metadata);
+        songsNames->insert(metadata);
+        songs.push_back(metadata);
+        insertAlbum(metadata);
         NumberOfSongs++;
     }
-}
-
-void ServerHandler::loadSetUp(){
-    std::ifstream f(metadataPath);
-    if(!f.good()){
-        std::ofstream metadata;
-        metadata.open(ServerHandler::metadataPath, std::ios::out);
-        metadata.write(metadataTemplate.data(),metadataTemplate.size());
-    }
-    loadUsers();
-    loadSongs();
-}
-
-void ServerHandler::updateSongs(){
-    boost::property_tree::ptree data;
-    boost::property_tree::read_json(metadataPath,data);
-    boost::property_tree::ptree* songs = new boost::property_tree::ptree();
-    for(Metadata* data : ServerHandler::songs)
-        songs->push_back(std::make_pair("",data->toJSON()));
-
-    data.erase("songs");
-    data.add_child("songs",*songs);
-    boost::property_tree::write_json(metadataPath,data);
-    delete(songs);
+    stmt->close();
+    result->close();
+    delete(stmt);
+    delete(result);
 }
 
 

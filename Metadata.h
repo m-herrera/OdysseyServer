@@ -19,19 +19,10 @@ public:
     std::string pathName = "";
     std::string lyrics = "";
     std::string genre = "";
-    std::string year = "";
+    int year = 0;
+    bool type = false; //false = song; true = video
 
-    /**carga un json en el objeto
-    *
-    * @param json
-    */
-    void fromJSON(boost::property_tree::ptree json);
-
-    /**crea un json a partir del objeto
-    *
-    * @return arbol que representa el json
-    */
-    boost::property_tree::ptree toJSON();
+    void toDB();
 
     /**crea un xml a partir del objeto
     *

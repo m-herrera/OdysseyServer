@@ -13,3 +13,4 @@ if(Boost_FOUND)
 endif()
 
 target_link_libraries (OdysseyServer ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries (OdysseyServer mysqlcppconn)

@@ -3,49 +3,20 @@
 //
 
 #include "Metadata.h"
+#include "ServerHandler.h"
+#include <mysql_connection.h>
+#include <cppconn/statement.h>
 
-void Metadata::fromJSON(boost::property_tree::ptree json) {
+void Metadata::toDB() {
 
+    sql::Statement* stmt = ServerHandler::dbConnection->createStatement();
+    std::string command = "INSERT INTO Multimedia (name,artist,album,path,lyrics,genre,year,type) VALUES ('"+
+                          this->name+"','"+this->artist+"','"+this->album+"','"+this->pathName+"','"+this->lyrics+"','"+this->genre+"',"+std::to_string(this->year)+","+std::to_string(this->type)+")";
 
-    for(boost::property_tree::ptree::value_type const& v : json){
-        if (v.first == "name"){
-            this->name = v.second.data();
-        }
-        else if(v.first == "artist"){
-            this->artist = v.second.data();
-        }
-        else if(v.first == "album"){
-            this->album = v.second.data();
-        }
-        else if(v.first == "pathName"){
-            this->pathName = v.second.data();
-        }
-        else if(v.first == "lyrics"){
-            this->lyrics = v.second.data();
-        }
-        else if(v.first == "genre"){
-            this->genre = v.second.data();
-        }
-        else if(v.first == "year"){
-            this->year = v.second.data();
-        }
+    stmt->execute(command);
 
-
-    }
-}
-
-
-boost::property_tree::ptree Metadata::toJSON() {
-
-    boost::property_tree::ptree json;
-    json.put("name", this->name);
-    json.put("album", this->album);
-    json.put("artist", this->artist);
-    json.put("pathName", this->pathName);
-    json.put("lyrics",this->lyrics);
-    json.put("genre", this->genre);
-    json.put("year",this->year);
-    return json;
+    stmt->close();
+    delete(stmt);
 }
 
 boost::property_tree::ptree Metadata::toXML() {
@@ -72,8 +43,5 @@ std::string Metadata::get(std::string param){
     }
     else if(param == "genre"){
         return boost::algorithm::to_lower_copy(this->genre);
-    }
-    else if(param == "year"){
-        return boost::algorithm::to_lower_copy(this->year);
     }
 }

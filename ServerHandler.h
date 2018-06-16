@@ -15,9 +15,12 @@
 #include <fstream>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <cppconn/connection.h>
 
 class ServerHandler {
 public:
+
+    static sql::Connection* dbConnection;
     /**
      * estructura que almacena usuarios
      */
@@ -27,17 +30,6 @@ public:
      * path de la carpeta donde se almacenan las canciones
      */
     static const std::string trackPath;
-
-    /**
-     * path del .json donde se almacenará la metadata
-     */
-    static const std::string metadataPath;
-
-    /**
-     * estructura default del .json con la metadata,
-     * en caso de que el .json no exista
-     */
-    static const std::string metadataTemplate;
 
     /**
      * cantidad de canciones en el servidor
@@ -77,17 +69,6 @@ public:
     static std::string sortBy;
 
     /**
-     * actualiza los json con los usuarios en las
-     * estructuras dinámicas
-     */
-    static void updateUsers();
-
-    /**actualiza los json con las canciones en las
-     * estructuras dinámicas
-     */
-    static void updateSongs();
-
-    /**
      * carga los usuarios y las canciones de los archivos
      * json a las estructuras dinámicas
      */
@@ -114,8 +95,7 @@ public:
 
 private:
     static void loadUsers();
-    static void loadSongs();
-    static void updateUsersAux(boost::property_tree::ptree* users, TreeNode* parent);
+    static void loadMetadata();
 
 };
 

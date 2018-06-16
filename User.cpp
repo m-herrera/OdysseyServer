@@ -2,7 +2,10 @@
 // Created by marco on 13/05/18.
 //
 
+#include <cppconn/statement.h>
 #include "User.h"
+#include "ServerHandler.h"
+//#include <mysql_connection.h>
 
 const std::string &User::getFirstName() const {
     return firstName;
@@ -52,73 +55,23 @@ void User::setFriends(const std::vector<std::string> &friends) {
     User::friends = friends;
 }
 
-int User::getAge() const {
-    return age;
+std::string User::getBirthday() const {
+    return birthday;
 }
 
-void User::setAge(int age) {
-    User::age = age;
+void User::setBirthday(std::string birthday) {
+    User::birthday = birthday;
 }
 
-void User::fromJSON(boost::property_tree::ptree json) {
 
-    for(boost::property_tree::ptree::value_type const& v : json){
-        if (v.first == "first_name"){
-            this->firstName = v.second.data();
-        }
-        else if(v.first == "last_name"){
-            this->lastName = v.second.data();
-        }
-        else if(v.first == "username"){
-            this->username = v.second.data();
-        }
-        else if(v.first == "password"){
-            this->password = v.second.data();
-        }
-        else if(v.first == "age"){
-            this->age = std::stoi(v.second.data());
-        }
-        else if(v.first == "genres"){
-            std::vector<std::string> genres;
-            for (auto& item : json.get_child("genres"))
-                genres.push_back(item.second.data());
-            this->genres = genres;
-        }
-        else if(v.first == "friends"){
-            std::vector<std::string> friends;
-            for (auto& item : json.get_child("friends"))
-                friends.push_back(item.second.data());
-            this->friends = friends;
-        }
+void User::toDB() {
 
-    }
-}
+    sql::Statement* stmt = ServerHandler::dbConnection->createStatement();
+    std::string command = "INSERT INTO Users (user_name,first_name,last_name,password,birthday) VALUES ('"+
+        this->username+"','"+this->firstName+"','"+this->lastName+"','"+this->password+"','"+this->birthday+"')";
 
-boost::property_tree::ptree User::toJSON() {
-    boost::property_tree::ptree json;
-    json.put("first_name", this->firstName);
-    json.put("last_name", this->lastName);
-    json.put("username", this->username);
-    json.put("password", this->password);
+    stmt->execute(command);
 
-    json.put("age", this->age);
-
-    json.add_child("genres", GetJSONArray(this->genres));
-    json.add_child("friends", GetJSONArray(this->friends));
-
-    return json;
-}
-
-boost::property_tree::ptree User::GetJSONArray(std::vector<std::string> data){
-
-    boost::property_tree::ptree children;
-
-    for (auto &&specificData : data) {
-        boost::property_tree::ptree child;
-
-        child.put("",specificData);
-        children.push_back(std::make_pair("",child));
-    }
-
-    return children;
+    stmt->close();
+    delete(stmt);
 }

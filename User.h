@@ -18,9 +18,7 @@ private:
     std::string password;
     std::vector<std::string> genres;
     std::vector<std::string> friends;
-    int age;
-
-    boost::property_tree::ptree GetJSONArray(std::vector<std::string> data);
+    std::string birthday;
 
 public:
     const std::string &getFirstName() const;
@@ -47,21 +45,11 @@ public:
 
     void setFriends(const std::vector<std::string> &friends);
 
-    int getAge() const;
+    std::string getBirthday() const;
 
-    void setAge(int age);
+    void setBirthday(std::string birthday);
 
-    /**carga un json en el objeto
-     *
-     * @param json
-     */
-    void fromJSON(boost::property_tree::ptree json);
-
-    /**crea un json a partir del objeto
-     *
-     * @return arbol que representa el json
-     */
-    boost::property_tree::ptree toJSON();
+    void toDB();
 
 };
 
