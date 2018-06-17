@@ -8,8 +8,6 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 
-const std::string ServerHandler::trackPath  ="/home/marco/Desktop/Odyssey++/Tracks/";
-
 int ServerHandler::NumberOfSongs = 0;
 
 std::vector<Metadata*> ServerHandler::songs;
@@ -23,6 +21,8 @@ AVLTree* ServerHandler::songsArtists = nullptr;
 BinarySearchTree* ServerHandler::users = nullptr;
 
 sql::Connection* ServerHandler::dbConnection = nullptr;
+
+std::string ServerHandler::tempContent = "";
 
 const int ServerHandler::pageSize = 10;
 

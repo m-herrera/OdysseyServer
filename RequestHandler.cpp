@@ -5,6 +5,7 @@
 #include <set>
 #include "RequestHandler.h"
 #include "Sorter.h"
+#include "Raid5_controller/GOD_controller.h"
 #include <cppconn/statement.h>
 
 std::string RequestHandler::handle(boost::property_tree::ptree xmlRequest){
@@ -137,11 +138,12 @@ boost::property_tree::ptree RequestHandler::handleRegistration(boost::property_t
 
 boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::ptree xmlRequest){
     std::cout<< "Upload Request" <<std::endl;
-    std::ofstream trackFile;
     ServerHandler::NumberOfSongs ++;
-    trackFile.open(ServerHandler::trackPath +"Track"+ std::to_string(ServerHandler::NumberOfSongs), std::ios::out);
     Metadata* song = new Metadata();
     song->pathName = "Track"+std::to_string(ServerHandler::NumberOfSongs);
+
+    int chunk = 0;
+    int totalChunks = 0;
     for(boost::property_tree::ptree::value_type const& v : xmlRequest.get_child("request")){
         if(v.first == "name"){
             song->name = v.second.data();
@@ -153,8 +155,7 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
             song->album = v.second.data();
         }
         else if( v.first == "content") {
-            std::string rawData = base64_decode(v.second.data());
-            trackFile.write(rawData.data(), rawData.size());
+            ServerHandler::tempContent.append(base64_decode(v.second.data()));
         }else if(v.first == "lyrics"){
             song->lyrics = v.second.data();
         }else if(v.first == "genre"){
@@ -163,20 +164,25 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
             song->year = std::atoi(v.second.data().data());
         }else if(v.first == "type"){
             song->type = v.second.data() != "song";
+        }else if(v.first == "chunk"){
+            chunk = std::atoi(v.second.data().data());
+        }else if(v.first == "totalChunks"){
+            totalChunks = std::atoi(v.second.data().data());
         }
     }
+
+
     std::vector<Metadata*> songs;
     songs = ServerHandler::songsNames->search(song->name);
 
     boost::property_tree::ptree response;
+
 
     if (songs.size() != 0){
         while(true){
             for(Metadata* data :songs){
                 if(data->album == song->album && data->artist == song->artist && data->lyrics == song->lyrics){
                     ServerHandler::NumberOfSongs--;
-                    trackFile.close();
-                    std::remove((ServerHandler::trackPath+song->pathName).data());
 
                     response.put("error",false);
                     response.put("description","song already uploaded");
@@ -190,13 +196,16 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
         }
     }
 
+    if(chunk == totalChunks){
+        GOD_controller::saveFile((char*)ServerHandler::tempContent.data(),(char*)song->pathName.data(),ServerHandler::tempContent.size());
+        ServerHandler::tempContent = "";
+    }
+
     ServerHandler::songsNames->insert(song);
     ServerHandler::songsArtists->insert(song);
     ServerHandler::songs.push_back(song);
     ServerHandler::insertAlbum(song);
     song->toDB();
-    trackFile.close();
-
 
     response.put("error",false);
     response.put("description","successful upload");
@@ -350,34 +359,24 @@ boost::property_tree::ptree RequestHandler::handlePlay(boost::property_tree::ptr
 
 boost::property_tree::ptree RequestHandler::getChunk(std::string path,int chunk){
 
-    std::fstream trackFile;
-    trackFile.open(ServerHandler::trackPath +path, std::ios::in|std::ios::binary);
+    char* content = GOD_controller::get_file(path);
 
-    if(!trackFile){}
-
-    int seek = 0;
+    int seek = chunk*ServerHandler::chunkSize;
     int bytes = 0;
-    if(chunk != 0){
-        seek = chunk*ServerHandler::chunkSize;
-    }
 
-    trackFile.seekg(0, std::ios::end);
-    int size = trackFile.tellg();
-    trackFile.seekg(0, std::ios::beg);
-
-    if(seek != 0) {trackFile.seekg(seek);}
+    size_t size = strlen(content);
 
     char* data = new char[ServerHandler::chunkSize];
 
-    if(seek + ServerHandler::chunkSize > size){
-        bytes = size-seek;
-        trackFile.read(data,bytes);
-
-    }else{
-        bytes = ServerHandler::chunkSize;
-        trackFile.read(data,bytes);
+    for (int i = 0; i < ServerHandler::chunkSize; i++){
+        if (seek+i > size){
+            break;
+        }
+        data[i] = content[seek+i];
+        bytes++;
     }
-    trackFile.close();
+
+    delete[] content;
 
     boost::property_tree::ptree parent;
     int chunks = (int)std::ceil((double)size/(double)ServerHandler::chunkSize);
@@ -521,7 +520,7 @@ boost::property_tree::ptree RequestHandler::handleDeletion(boost::property_tree:
         return responseXML;
     }
 
-    std::remove((ServerHandler::trackPath + song->pathName).data());
+    GOD_controller::deletefile((char*)song->pathName.data());
 
     ServerHandler::songs.erase(std::remove(ServerHandler::songs.begin(), ServerHandler::songs.end(), song), ServerHandler::songs.end());
     delete(song);

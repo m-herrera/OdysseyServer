@@ -14,6 +14,7 @@ int main() {
     stmt->execute("TRUNCATE TABLE Multimedia");
     stmt->execute("TRUNCATE TABLE Users");
     */
+
     boost::asio::io_service ioservice;
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), 2000);
 
@@ -21,5 +22,7 @@ int main() {
     ServerHandler::loadSetUp();
     srand(time(nullptr));
     ioservice.run();
+
     return 0;
+
 }

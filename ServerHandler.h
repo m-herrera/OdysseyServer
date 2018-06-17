@@ -20,16 +20,13 @@
 class ServerHandler {
 public:
 
+    static std::string tempContent;
+
     static sql::Connection* dbConnection;
     /**
      * estructura que almacena usuarios
      */
     static BinarySearchTree* users;
-
-    /**
-     * path de la carpeta donde se almacenan las canciones
-     */
-    static const std::string trackPath;
 
     /**
      * cantidad de canciones en el servidor
