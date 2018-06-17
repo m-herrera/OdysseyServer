@@ -101,12 +101,3 @@ void HuffmanCodeUltimate::buildHuffmanTree(string text) {
     cout << "\nDecoded string is: \n";
     decode(root, sb);
 }
-
-int main()
-{
-
-    HuffmanCodeUltimate::buildHuffmanTree("Que onda que pez");
-
-
-    return 0;
-}
