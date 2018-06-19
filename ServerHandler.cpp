@@ -26,11 +26,24 @@ std::string ServerHandler::tempContent = "";
 
 const int ServerHandler::pageSize = 10;
 
-const int ServerHandler::chunkSize = 327680;
+const int ServerHandler::chunkSize = 1048576;
 
 std::string ServerHandler::sortBy = "name";
 
-void ServerHandler::loadSetUp(){
+void ServerHandler::loadSetUp() {
+
+    sql::Statement *stmt = dbConnection->createStatement();
+    sql::ResultSet *result = stmt->executeQuery("SELECT * FROM Auxiliar");
+    bool flag = false;
+    while(result->next()){
+        ServerHandler::NumberOfSongs = result->getInt("number_of_songs");
+        flag = true;
+    }
+    if(!flag){
+        std::string command = "INSERT INTO Auxiliar (number_of_songs) VALUES (0)";
+        stmt->execute(command);
+    }
+
     loadUsers();
     loadMetadata();
 }

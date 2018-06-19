@@ -138,7 +138,6 @@ boost::property_tree::ptree RequestHandler::handleRegistration(boost::property_t
 
 boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::ptree xmlRequest){
     std::cout<< "Upload Request" <<std::endl;
-    ServerHandler::NumberOfSongs ++;
     Metadata* song = new Metadata();
     song->pathName = "Track"+std::to_string(ServerHandler::NumberOfSongs);
 
@@ -196,16 +195,22 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
         }
     }
 
-    if(chunk == totalChunks){
-        GOD_controller::saveFile((char*)ServerHandler::tempContent.data(),(char*)song->pathName.data(),ServerHandler::tempContent.size());
-        ServerHandler::tempContent = "";
-    }
+    if(chunk == totalChunks) {
+        ServerHandler::NumberOfSongs ++;
+        GOD_controller::saveFile((char *) ServerHandler::tempContent.data(), (char *) song->pathName.data(),
+                                 ServerHandler::tempContent.size());
+        ServerHandler::tempContent.clear();
 
-    ServerHandler::songsNames->insert(song);
-    ServerHandler::songsArtists->insert(song);
-    ServerHandler::songs.push_back(song);
-    ServerHandler::insertAlbum(song);
-    song->toDB();
+        ServerHandler::songsNames->insert(song);
+        ServerHandler::songsArtists->insert(song);
+        ServerHandler::songs.push_back(song);
+        ServerHandler::insertAlbum(song);
+        boost::replace_all( song->lyrics, "'", "''");
+        song->toDB();
+
+    }else{
+        delete(song);
+    }
 
     response.put("error",false);
     response.put("description","successful upload");
@@ -364,7 +369,7 @@ boost::property_tree::ptree RequestHandler::getChunk(std::string path,int chunk)
     int seek = chunk*ServerHandler::chunkSize;
     int bytes = 0;
 
-    size_t size = strlen(content);
+    long size = GOD_controller::size;
 
     char* data = new char[ServerHandler::chunkSize];
 

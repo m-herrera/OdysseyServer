@@ -1,8 +1,10 @@
 #include <boost/asio.hpp>
 #include <cppconn/driver.h>
 #include "Server.h"
+#include "Raid5_controller/GOD_controller.h"
 #include <cppconn/statement.h>
 int main() {
+
     sql::Driver *driver;
 
     driver = get_driver_instance();
@@ -13,8 +15,8 @@ int main() {
     sql::Statement* stmt = ServerHandler::dbConnection->createStatement();
     stmt->execute("TRUNCATE TABLE Multimedia");
     stmt->execute("TRUNCATE TABLE Users");
+    stmt->execute("TRUNCATE TABLE Auxiliar");
     */
-
     boost::asio::io_service ioservice;
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), 2000);
 
