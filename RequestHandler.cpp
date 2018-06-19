@@ -4,7 +4,6 @@
 
 #include <set>
 #include "RequestHandler.h"
-#include "Sorter.h"
 #include "Raid5_controller/GOD_controller.h"
 #include <cppconn/statement.h>
 
@@ -207,7 +206,7 @@ boost::property_tree::ptree RequestHandler::handleUpload(boost::property_tree::p
         ServerHandler::insertAlbum(song);
         boost::replace_all( song->lyrics, "'", "''");
         song->toDB();
-
+        boost::replace_all(song->lyrics, "''", "'");
     }else{
         delete(song);
     }
@@ -532,7 +531,9 @@ boost::property_tree::ptree RequestHandler::handleDeletion(boost::property_tree:
 
     sql::Statement* stmt = ServerHandler::dbConnection->createStatement();
 
-    std::string command = "DELETE FROM Multimedia WHERE name = "+name+" AND album = "+ album+" AND artist = "+artist;
+    std::string command =
+            "DELETE FROM Multimedia WHERE name = '" + name + "' AND album = '" + album + "' AND artist = '" + artist +
+            "'";
     stmt->execute(command);
 
     stmt->close();
@@ -620,6 +621,7 @@ boost::property_tree::ptree RequestHandler::handleChangeMetadata(boost::property
             newYear = std::atoi(v.second.data().data());
         }else if(v.first == "newLyrics"){
             newLyrics = v.second.data();
+            boost::replace_all(newLyrics, "'", "''");
         }
     }
 
@@ -640,11 +642,12 @@ boost::property_tree::ptree RequestHandler::handleChangeMetadata(boost::property
 
     sql::Statement* stmt = ServerHandler::dbConnection->createStatement();
 
-    std::string command = "UPDATE Multimedia SET name = '"+newName+"',artist = '"+newArtist+"',album = '"+
-                          newAlbum+"',lyrics = '"+newLyrics+"',genre = '"+newGenre+"',year = "+std::to_string(newYear) + " WHERE name = "+name+" AND album = "+
-                          album+" AND artist = "+artist;
+    std::string command = "UPDATE Multimedia SET name = '" + newName + "',artist = '" + newArtist + "',album = '" +
+                          newAlbum + "',lyrics = '" + newLyrics + "',genre = '" + newGenre + "',year = " +
+                          std::to_string(newYear) + " WHERE name = '" + name + "' AND album = '" +
+                          album + "' AND artist = '" + artist + "'";
     stmt->execute(command);
-
+    boost::replace_all(newLyrics, "''", "'");
     stmt->close();
     delete(stmt);
 

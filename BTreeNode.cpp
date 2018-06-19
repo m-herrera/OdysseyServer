@@ -52,8 +52,12 @@ void BTreeNode::empty(){
         // traverse the subtree rooted with child C[i].
         if (leaf == false)
             C[i]->empty();
-        if(C[i] != nullptr)
-            delete(C[i]);
+        //if(C[i] != nullptr)
+        //delete(C[i]);
+
+
+
+
 
     }
 
