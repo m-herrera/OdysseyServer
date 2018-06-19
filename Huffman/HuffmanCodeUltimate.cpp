@@ -36,8 +36,8 @@ void HuffmanCodeUltimate::encode(Node *root, string str, map<char, string> &huff
         encode(root->right, str + "1", huffmanCode);
 
 }
-
-void HuffmanCodeUltimate::decode(Node *root, string str) {
+ //descomprime el codigo de huffman, el root es el del arbol que se hace cuando se envia
+string HuffmanCodeUltimate::decode(Node *root, string str) {
     string ans = "";
     Node* curr = root;
     for (int i=0;i<str.size();i++)
@@ -55,9 +55,10 @@ void HuffmanCodeUltimate::decode(Node *root, string str) {
         }
     }
      cout<<ans<<endl;
+    return ans;
 }
-
-void HuffmanCodeUltimate::buildHuffmanTree(string text) {
+//este codigo es el que comprime, retorna ek string de huffman
+string HuffmanCodeUltimate::buildHuffmanTree(string text) {
     map<char, int> freq;
     for (char ch: text) {
         freq[ch]++;
@@ -98,15 +99,11 @@ void HuffmanCodeUltimate::buildHuffmanTree(string text) {
 
 
     cout << "\nEncoded string is :\n" << sb << '\n';
-    cout << "\nDecoded string is: \n";
-    decode(root, sb);
+    return sb;
 }
 /*
 int main()
 {
-
     HuffmanCodeUltimate::buildHuffmanTree("Que onda que pez");
-
-
     return 0;
 }*/
