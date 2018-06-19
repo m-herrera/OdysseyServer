@@ -26,7 +26,7 @@ std::string ServerHandler::tempContent = "";
 
 const int ServerHandler::pageSize = 10;
 
-const int ServerHandler::chunkSize = 1048576;
+int ServerHandler::chunkSize = 1048576;
 
 std::string ServerHandler::sortBy = "name";
 
@@ -94,7 +94,7 @@ void ServerHandler::loadMetadata() {
         songsNames->insert(metadata);
         songs.push_back(metadata);
         insertAlbum(metadata);
-        NumberOfSongs++;
+
     }
     stmt->close();
     result->close();
@@ -104,15 +104,27 @@ void ServerHandler::loadMetadata() {
 
 
 void ServerHandler::quickSort(){
-    Sorter::quickSort(songs,0,NumberOfSongs-1);
+    int i = 0;
+    for (auto &&item : ServerHandler::songs) {
+        i++;
+    }
+    Sorter::quickSort(songs, 0, i - 1);
 }
 
 void ServerHandler::bubbleSort(){
-    Sorter::bubbleSort(songs,NumberOfSongs);
+    int i = 0;
+    for (auto &&item : ServerHandler::songs) {
+        i++;
+    }
+    Sorter::bubbleSort(songs, i);
 }
 
 void ServerHandler::radixSort(){
-    Sorter::radixSort(songs,NumberOfSongs);
+    int i = 0;
+    for (auto &&item : ServerHandler::songs) {
+        i++;
+    }
+    Sorter::radixSort(songs, i);
 }
 
 void ServerHandler::insertAlbum(Metadata* insert){

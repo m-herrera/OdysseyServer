@@ -351,6 +351,11 @@ boost::property_tree::ptree RequestHandler::handlePlay(boost::property_tree::ptr
                 break;
             }
             std::cout<<song->name<<std::endl;
+            if (!song->type) {
+                ServerHandler::chunkSize = 327680;
+            } else {
+                ServerHandler::chunkSize = 1048576;
+            }
             responseXML = getChunk(song->pathName,std::atoi(v.second.data().data()));
             responseXML.put("error",false);
             responseXML.put("description","success");
@@ -542,7 +547,7 @@ boost::property_tree::ptree RequestHandler::handleDeletion(boost::property_tree:
     for(Metadata* data :ServerHandler::songs){
         delete(data);
     }
-
+    ServerHandler::songs.clear();
     ServerHandler::sortedAlbums.clear();
     ServerHandler::songsArtists->empty();
     delete(ServerHandler::songsArtists);

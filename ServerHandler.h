@@ -58,7 +58,8 @@ public:
     /**
      * tamaño de los chunks para el streaming
      */
-    static const int chunkSize;
+    static int chunkSize;
+
 
     /**
      * tipo de ordenamiento por default

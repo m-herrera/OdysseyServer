@@ -107,7 +107,7 @@ boost::property_tree::ptree HuffmanCodeUltimate::buildHuffmanTree(string text) {
     return parent;
 }
 
-Node *getRoot(boost::property_tree::ptree tree) {
+static Node *getRoot(boost::property_tree::ptree tree) {
     if (tree.get<int>("freq") == -1) {
         return nullptr;
     }
@@ -132,13 +132,4 @@ std::string HuffmanCodeUltimate::getTree(boost::property_tree::ptree xml) {
     return HuffmanCodeUltimate::decode(root, decode);
 }
 
-
-int main()
-{
-    boost::property_tree::ptree ptree;
-    boost::property_tree::ptree p = HuffmanCodeUltimate::buildHuffmanTree("Que onda que pez");
-    ptree.add_child("request", p);
-    HuffmanCodeUltimate::getTree(ptree);
-    return 0;
-}
 
