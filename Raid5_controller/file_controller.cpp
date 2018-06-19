@@ -10,9 +10,21 @@
 
 
 void file_controller::save_file(char *file, char *filename, long size) {
-    save_file1(file,filename,size);
-    save_file2(file,filename,size);
+    FILE *iFile1;
+    iFile1 = fopen("PRUEBAMP$", "wb");
+    fwrite(file,1, size,iFile1);
+    FILE *iFile =  fopen("PRUEBAMP$", "rb");
+    fseek(iFile, 0, SEEK_END);
+    long lSize = ftell(iFile);
+    rewind(iFile);
+    char* buffer = (char *) malloc(sizeof(char) * lSize);
+    fread(buffer, 1, lSize, iFile);
+    save_file1(buffer,filename,lSize);
+    save_file2(buffer,filename,lSize);
     createfile3(filename);
+    remove("PRUEBAMP$" );
+
+    delete[] buffer;
 }
 void file_controller::Recontruct_file(char *filename,int failure) {
     string* path;
