@@ -2,6 +2,8 @@
 
 Session::Session(boost::asio::io_service *ioservice) : tcp_socket(*ioservice){}
 
+std::string Session::response = "";
+
 void Session::start() {
     std::cout<<"Cliente Conectado"<<std::endl;
     tcp_socket.async_read_some(boost::asio::buffer(buffer), boost::bind(&Session::read_handler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
@@ -15,7 +17,7 @@ void Session::read_handler(const boost::system::error_code &ec, std::size_t byte
         boost::property_tree::ptree pt;
         try{
             boost::property_tree::read_xml(is, pt);
-            std::string response = RequestHandler::handle(pt);
+            response = RequestHandler::handle(pt);
             boost::asio::async_write(tcp_socket, boost::asio::buffer(response),
                                      boost::bind(&Session::write_handler, this, boost::asio::placeholders::error,
                                                  boost::asio::placeholders::bytes_transferred));
@@ -43,7 +45,7 @@ void Session::write_handler(const boost::system::error_code &ec, std::size_t byt
         std::cout<<"Request finalizado\n"<<std::endl;
         tcp_socket.async_read_some(boost::asio::buffer(buffer), boost::bind(&Session::read_handler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
     }else{
-        std::cout<<"Error de escritura: "<<ec<<std::endl;
+        std::cout<<"Error de escritura: "<<ec.message()<<std::endl;
     }
 }
 

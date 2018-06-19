@@ -8,6 +8,7 @@
 #include "file_controller.h"
 #include "GOD_controller.h"
 
+
 void file_controller::save_file(char *file, char *filename, long size) {
     save_file1(file,filename,size);
     save_file2(file,filename,size);
@@ -49,19 +50,19 @@ void file_controller::Recontruct_file(char *filename,int failure) {
     char* file3 = (char*)malloc(sizeof(char)*lSize);;
     fread(file1, 1, lSize, iFile);
     fread(file3, 1, lSize, iFile2);
-int x = 0;
-if(file1==NULL){
+    int x = 0;
+    if(file1==NULL){
+        delete[] file1;
+        delete[] file2;
+        delete[] file3;
+        return;
+    }
+    while(x<lSize){
+        file2[x] = reconstruct_from3rd(file1[x],file3[x]);
+        x++;
+    }
+    fwrite(file2,1,lSize,iFile3);
     delete[] file1;
-    delete[] file2;
-    delete[] file3;
-    return;
-}
-while(x<lSize){
-    file2[x] = reconstruct_from3rd(file1[x],file3[x]);
-    x++;
-}
-fwrite(file2,1,lSize,iFile3);
-delete[] file1;
     delete[] file2;
     delete[] file3;
 
@@ -123,7 +124,7 @@ void file_controller::save_file2(char *file, char *filename, long size) {
     FILE *iFile1;
     iFile1 = fopen(pathfile1->c_str(), "wb");
     fwrite(file2, size/2, 1, iFile1);
-delete[] file2;
+    delete[] file2;
 }
 string* file_controller::filepath(int disc) {
 
@@ -187,7 +188,7 @@ char file_controller::makecharacter(char char1, char char2) {
     bitset<8> character1 = bitset<8>(char1);
     bitset<8> character2 = bitset<8>(char2);
     bitset<8> character3 = bitset<8>();
-  //  cout<<character1<<endl;
+    //  cout<<character1<<endl;
     int x = 0;
     while(x<8){
         if(character1[x]==character2[x]){
@@ -211,10 +212,10 @@ char* file_controller::getfile(string filename) {
 
     fseek(iFile, 0, SEEK_END);
     long lSize = ftell(iFile);
-    GOD_controller::size = lSize*2;
     rewind(iFile);
     fseek(iFile2, 0, SEEK_END);
     lSize = ftell(iFile2);
+    GOD_controller::size = lSize*2;
     rewind(iFile2);
     char* buffer = (char *) malloc(sizeof(char) * lSize);
     char* buffer2 = (char *) malloc(sizeof(char) * lSize);
@@ -229,6 +230,8 @@ char* file_controller::getfile(string filename) {
     }
     delete[] buffer;
     delete[] buffer2;
+    cout<<string(buffer3)<<endl;
+    //cout<<base64::base64_encode(reinterpret_cast<const unsigned char *>(buffer3), lSize * 2);
     return buffer3;
 
 }

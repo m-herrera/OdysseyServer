@@ -26,6 +26,9 @@ private:
     std::string request;
 
 public:
+
+    static std::string response;
+
     /**
      * Socket de red al cual esta conectado
      */
