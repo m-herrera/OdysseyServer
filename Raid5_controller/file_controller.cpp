@@ -6,10 +6,11 @@
 #include <pwd.h>
 #include <bitset>
 #include "file_controller.h"
+#include "GOD_controller.h"
+
 void file_controller::save_file(char *file, char *filename, long size) {
     save_file1(file,filename,size);
     save_file2(file,filename,size);
-    delete[] file;
     createfile3(filename);
 }
 void file_controller::Recontruct_file(char *filename,int failure) {
@@ -210,9 +211,10 @@ char* file_controller::getfile(string filename) {
 
     fseek(iFile, 0, SEEK_END);
     long lSize = ftell(iFile);
+    GOD_controller::size = lSize*2;
     rewind(iFile);
     fseek(iFile2, 0, SEEK_END);
-     lSize = ftell(iFile2);
+    lSize = ftell(iFile2);
     rewind(iFile2);
     char* buffer = (char *) malloc(sizeof(char) * lSize);
     char* buffer2 = (char *) malloc(sizeof(char) * lSize);

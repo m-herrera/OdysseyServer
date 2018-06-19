@@ -7,6 +7,8 @@
 #include "Existence_controller.h"
 #include "file_controller.h"
 
+long GOD_controller::size = 0;
+
 void GOD_controller::check() {
 
     bool is_1_ok= Existence_controller::disk_oneok();

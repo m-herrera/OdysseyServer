@@ -10,6 +10,8 @@
 using namespace std;
 class GOD_controller {
 public:
+
+    static long size;
     /**
      * Antes de hacer cualquier funcion se llama a check, esto lo que hace es analizar el estado de los discos
      * al mismo tiempo si alguno fue borrado lo reconstruye
