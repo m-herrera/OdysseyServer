@@ -28,6 +28,11 @@ boost::property_tree::ptree Metadata::toXML() {
     xml.put("lyrics", this->lyrics);
     xml.put("genre", this->genre);
     xml.put("year",this->year);
+    if (this->type) {
+        xml.put("type", "video");
+    } else {
+        xml.put("type", "song");
+    }
     return xml;
 }
 

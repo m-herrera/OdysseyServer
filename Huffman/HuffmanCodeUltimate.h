@@ -12,11 +12,15 @@ using namespace std;
 class HuffmanCodeUltimate{
 public:
 
-   static  Node* getNode(char ch, int freq, Node* left, Node* right);
-   static void encode(Node* root, string str, map<char, string> &huffmanCode);
-  static  string decode(Node* root, string str);
-    static string buildHuffmanTree(string text);
+    static Node *getNode(char ch, int freq, Node *left, Node *right);
 
+    static void encode(Node *root, string str, map<char, string> &huffmanCode);
+
+    static string decode(Node *root, string str);
+
+    static boost::property_tree::ptree buildHuffmanTree(string text);
+
+    static std::string getTree(boost::property_tree::ptree xml);
 
 
 };

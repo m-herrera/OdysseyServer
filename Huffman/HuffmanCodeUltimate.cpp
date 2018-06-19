@@ -1,10 +1,9 @@
 #include <iostream>
-#include <string>
 #include <queue>
 #include <map>
 #include <sstream>
+#include <boost/property_tree/xml_parser.hpp>
 #include "HuffmanCodeUltimate.h"
-#include "Node.h"
 
 using namespace std;
 Node* HuffmanCodeUltimate::getNode(char ch, int freq, Node *left, Node *right) {
@@ -58,7 +57,7 @@ string HuffmanCodeUltimate::decode(Node *root, string str) {
     return ans;
 }
 //este codigo es el que comprime, retorna ek string de huffman
-string HuffmanCodeUltimate::buildHuffmanTree(string text) {
+boost::property_tree::ptree HuffmanCodeUltimate::buildHuffmanTree(string text) {
     map<char, int> freq;
     for (char ch: text) {
         freq[ch]++;
@@ -99,11 +98,47 @@ string HuffmanCodeUltimate::buildHuffmanTree(string text) {
 
 
     cout << "\nEncoded string is :\n" << sb << '\n';
-    return sb;
+
+    boost::property_tree::ptree parent;
+    boost::property_tree::ptree tree = root->toXML();
+    parent.put("content", sb);
+    parent.add_child("tree", tree);
+    boost::property_tree::write_xml(std::cout, parent);
+    return parent;
 }
-/*
+
+Node *getRoot(boost::property_tree::ptree tree) {
+    if (tree.get<int>("freq") == -1) {
+        return nullptr;
+    }
+    Node *node = new Node();
+    node->freq = tree.get<int>("freq");
+    node->ch = tree.get<char>("ch");
+    node->left = getRoot(tree.get_child("left"));
+    node->right = getRoot(tree.get_child("right"));
+    return node;
+}
+
+std::string HuffmanCodeUltimate::getTree(boost::property_tree::ptree xml) {
+    std::string decode = "";
+    Node *root = nullptr;
+    for (boost::property_tree::ptree::value_type const &v : xml.get_child("request")) {
+        if (v.first == "content") {
+            decode = v.second.data();
+        } else if (v.first == "tree") {
+            root = getRoot(v.second);
+        }
+    }
+    return HuffmanCodeUltimate::decode(root, decode);
+}
+
+
 int main()
 {
-    HuffmanCodeUltimate::buildHuffmanTree("Que onda que pez");
+    boost::property_tree::ptree ptree;
+    boost::property_tree::ptree p = HuffmanCodeUltimate::buildHuffmanTree("Que onda que pez");
+    ptree.add_child("request", p);
+    HuffmanCodeUltimate::getTree(ptree);
     return 0;
-}*/
+}
+
